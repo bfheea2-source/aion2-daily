@@ -356,6 +356,19 @@
       white-space:nowrap;
       word-break:keep-all;
     }
+    
+    button.cloud {
+      background:#eef4ff;
+      border-color:#8fb3ff;
+    }
+    
+    .toolSep {
+      width:1px;
+      height:26px;
+      background:#ddd;
+      display:inline-block;
+      margin:0 6px;
+    }
 
     .toastHost{
       position:fixed;
@@ -640,6 +653,35 @@
       opacity:0.9;
     }
 
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+      import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    
+      const firebaseConfig = {
+        apiKey: "AIzaSyChkORuRT7JNcN3UtYOYAydCXLzZyehYvI",
+        authDomain: "aion2-61196.firebaseapp.com",
+        projectId: "aion2-61196",
+        storageBucket: "aion2-61196.firebasestorage.app",
+        messagingSenderId: "842564133938",
+        appId: "1:842564133938:web:93133616ef96942f56882b"
+      };
+    
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+    
+      // 전역으로 노출 (기존 코드와 섞기 위함)
+      window.__fb = {
+        auth, db,
+        GoogleAuthProvider,
+        signInWithPopup,
+        onAuthStateChanged,
+        signOut,
+        doc, getDoc, setDoc, serverTimestamp
+      };
+    </script>
+
     .note{font-size:12px;color:var(--muted);}
   </style>
 </head>
@@ -678,13 +720,20 @@
             <button id="addCharBtn" type="button">캐릭터 추가</button>
             <button id="renameCharBtn" type="button">이름 수정(리네임)</button>
             <button id="removeCharBtn" type="button" class="danger">현재 캐릭터 삭제</button>
-
+          
             <button id="resetCharBtn" type="button">이 캐릭터 전체 초기화</button>
             <button id="resetAllBtn" type="button">모든 캐릭터 전체 초기화</button>
-
+          
             <button id="exportBtn" type="button">백업 내보내기(JSON)</button>
             <button id="importBtn" type="button">복원 가져오기(JSON)</button>
+          
+            <!-- 🔽 Firebase 로그인 / 로그아웃 -->
+            <span class="toolSep"></span>
+          
+            <button id="loginBtn" type="button" class="cloud">Google 로그인</button>
+            <button id="logoutBtn" type="button" class="cloud" style="display:none;">로그아웃</button>
           </div>
+          
         </div>
 
         <div class="gridWrap">
@@ -1740,8 +1789,10 @@
           charMeta: state.charMeta,
           meta: { savedAt: nowIso(), reason: reason || "auto" }
         };
+        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         updateSavedLabel(payload.meta.savedAt);
+        fbSave(payload);   // 🔥 Firebase 동기화
       }
 
       function loadShugoPrefs(){
@@ -3289,6 +3340,17 @@
 
           setBonusTicket(char, "raid", n, "토벌전");
         });
+        
+        on("loginBtn", "click", function(){
+          var fb = window.__fb;
+          var provider = new fb.GoogleAuthProvider();
+          fb.signInWithPopup(fb.auth, provider);
+        });
+        
+        on("logoutBtn", "click", function(){
+          window.__fb.signOut(window.__fb.auth);
+        });
+
 
 
         (function(){
@@ -3420,28 +3482,105 @@
         renderGrid();
         renderSidePanel();
       }
+      
+      var fbUser = null;
+      var FB_DOC_PATH = null;
+      
+      function fbSave(payload){
+        if (!fbUser || !window.__fb) return;
+        var fb = window.__fb;
+      
+        return fb.setDoc(
+          fb.doc(fb.db, "users", fbUser.uid),
+          {
+            payload: payload,
+            updatedAt: fb.serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+      
+      function fbLoad(){
+        if (!fbUser || !window.__fb) return Promise.resolve(null);
+        var fb = window.__fb;
+      
+        return fb.getDoc(
+          fb.doc(fb.db, "users", fbUser.uid)
+        ).then(function(snap){
+          if (!snap.exists()) return null;
+          return snap.data().payload || null;
+        });
+      }
 
       function init(){
-        load();
+      
+        // 1) 이벤트/설정/버튼 바인딩은 1회만
         loadShugoState();
         wireButtons();
         loadShugoPrefs();
         updateShugoAlarmBtn();
-
-        var raw = localStorage.getItem(STORAGE_KEY);
-        if (raw){
-          try{
-            var parsed = JSON.parse(raw);
-            if (parsed && parsed.meta && parsed.meta.savedAt){
-              updateSavedLabel(parsed.meta.savedAt);
-            }
-          } catch(e){}
-        }
-
-        render();
+      
+        // (중요) 타이머도 1회만
         updateShugoPanel();
         setInterval(updateShugoPanel, 1000);
+      
+        // 2) 로그인 상태에 따라 데이터 로드 + 렌더는 여기서만!
+        window.__fb.onAuthStateChanged(window.__fb.auth, function(user){
+          fbUser = user;
+      
+          var loginBtn = document.getElementById("loginBtn");
+          var logoutBtn = document.getElementById("logoutBtn");
+      
+          if (loginBtn && logoutBtn){
+            if (user){
+              loginBtn.style.display = "none";
+              logoutBtn.style.display = "inline-block";
+            } else {
+              loginBtn.style.display = "inline-block";
+              logoutBtn.style.display = "none";
+            }
+          }
+      
+          if (user){
+            fbLoad().then(function(remote){
+              if (remote){
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+              }
+      
+              // ✅ 여기서만 로드/렌더
+              load();
+      
+              var raw = localStorage.getItem(STORAGE_KEY);
+              if (raw){
+                try{
+                  var parsed = JSON.parse(raw);
+                  if (parsed && parsed.meta && parsed.meta.savedAt){
+                    updateSavedLabel(parsed.meta.savedAt);
+                  }
+                } catch(e){}
+              }
+      
+              render();
+            });
+          } else {
+            // ✅ 로그아웃이면 로컬만 사용
+            load();
+      
+            var raw2 = localStorage.getItem(STORAGE_KEY);
+            if (raw2){
+              try{
+                var parsed2 = JSON.parse(raw2);
+                if (parsed2 && parsed2.meta && parsed2.meta.savedAt){
+                  updateSavedLabel(parsed2.meta.savedAt);
+                }
+              } catch(e){}
+            }
+      
+            render();
+          }
+        });
       }
+
 
       init();
     })();
