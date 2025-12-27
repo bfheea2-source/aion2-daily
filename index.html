@@ -1,0 +1,3450 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AION2 일일숙제</title>
+  <style>
+    :root{
+      --border:#111;
+      --grid:#222;
+      --bg:#fff;
+      --soft:#f3f5f8;
+      --rowA:#eaf0ff;
+      --rowB:#ffffff;
+      --weekend:#f7caa8;
+      --tab:#f2f2f2;
+      --tabActive:#fff;
+      --muted:#666;
+      --shadow:0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      padding:18px;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+      background:var(--soft);
+      color:#111;
+    }
+    .wrap{max-width:1200px;margin:0 auto;}
+    header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    h1{margin:0;font-size:20px;letter-spacing:-0.2px;}
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.3;
+      text-align:right;
+    }
+
+    .card{
+      background:var(--bg);
+      border:1px solid #ddd;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      padding:10px;
+      border-bottom:1px solid #e7e7e7;
+      background:#fafafa;
+      align-items:center;
+    }
+    .tab{
+      border:1px solid #ddd;
+      background:var(--tab);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+      user-select:none;
+    }
+
+    .tab.dragging{
+      opacity:0.4;
+    }
+    .tab.active{
+      background:var(--tabActive);
+      border-color:#bbb;
+      font-weight:700;
+    }
+    .tabs .spacer{flex:1;}
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px;
+      border-bottom:1px solid #e7e7e7;
+      background:#fff;
+    }
+    .leftTools,.rightTools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    button{
+      border:1px solid #ddd;
+      background:#fff;
+      padding:7px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:12px;
+    }
+    button:hover{border-color:#bbb;}
+    button:disabled{
+      cursor:not-allowed;
+      opacity:0.55;
+    }
+    .danger{
+      border-color:#f0b4b4;
+      background:#fff7f7;
+    }
+    .small{font-size:12px;color:var(--muted);}
+
+    .gridWrap{
+      padding:10px;
+      overflow-x:hidden;
+    }
+
+    table{
+      border-collapse:collapse;
+      width:100%;
+      min-width:0;
+      table-layout:fixed;
+      border:2px solid var(--border);
+      background:#fff;
+    }
+
+    th,td{
+      border:1px solid var(--grid);
+      text-align:center;
+      padding:6px 4px;
+      font-size:12px;
+      vertical-align:middle;
+      overflow:hidden;
+    }
+
+    thead th{font-weight:800;background:#f6f6f6;}
+    thead th.weekend{background:var(--weekend);}
+
+    th.taskCol{
+      width:170px;
+      background:#ffe0cf;
+      border-right:2px solid var(--border);
+    }
+
+    tbody tr:nth-child(odd) td{background:var(--rowA);}
+    tbody tr:nth-child(even) td{background:var(--rowB);}
+
+    td.taskName{
+      font-weight:800;
+      border-right:2px solid var(--border);
+      background:#fff;
+      text-align:center;
+      white-space:nowrap;
+    }
+
+    .dayHead{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:center;
+      justify-content:center;
+    }
+    .dayBtns{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:center;
+    }
+    .dayBtns button{
+      padding:4px 6px;
+      font-size:11px;
+      border-radius:9px;
+      width:84px;
+      white-space:nowrap;
+    }
+
+    input[type="checkbox"]{
+      width:16px;
+      height:16px;
+      cursor:pointer;
+      accent-color:#111;
+    }
+
+    .status{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      font-size:12px;
+      color:#222;
+      padding:2px 6px;
+      border:1px solid #e2e2e2;
+      border-radius:8px;
+      background:#fafafa;
+    }
+    .pill{
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #e2e2e2;
+      background:#fafafa;
+      font-size:12px;
+    }
+    .pill strong{font-weight:900;}
+
+    .badgeWeekly{
+      margin-left:8px;
+      font-size:11px;
+      color:#444;
+      border:1px solid #ddd;
+      background:#fafafa;
+      padding:2px 6px;
+      border-radius:999px;
+    }
+
+    .hoerangBox{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:center;
+      justify-content:center;
+      padding-left:0;
+    }
+    .mini{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .mini input[type="checkbox"]{
+      width:14px;
+      height:14px;
+    }
+
+    /* 정복/카운터 UI */
+    .conqBox{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:center;
+      justify-content:center;
+    }
+    .conqCtr{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .conqCtr button{
+      padding:2px 8px;
+      font-size:12px;
+      border-radius:8px;
+    }
+    .conqInfo{
+      font-size:11px;
+      color:#444;
+      line-height:1.2;
+    }
+
+    footer{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .mainLayout{
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+    }
+
+    .btn2x{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height:22px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid #ddd;
+      background:#f6f7fb;
+      font-size:12px;
+      font-weight:900;
+      color:#333;
+      cursor:pointer;
+    }
+
+    .btn2x:hover{
+      background:#eef0ff;
+      border-color:#bbb;
+    }
+
+    .btn2x:disabled{
+      opacity:0.45;
+      cursor:not-allowed;
+    }
+
+    /* ===== 수정탭(모달) 입력 3칸 UI ===== */
+    .field3{
+      flex:1 1 auto;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(110px, 1fr));
+      gap:10px;
+      align-items:end;
+      min-width:0;
+    }
+
+    .field3 .col{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+
+    .field3 .col span{
+      font-size:11px;
+      color:#444;
+      font-weight:900;
+      letter-spacing:-0.2px;
+      white-space:nowrap;
+    }
+
+    .field3 input:disabled{
+      background:#f5f6f8;
+      color:#333;
+      opacity:1;
+    }
+
+    @media (max-width: 640px){
+      .modal{ width:min(560px, 96vw); }
+      .field3{ grid-template-columns: repeat(2, minmax(110px, 1fr)); }
+    }
+    @media (max-width: 480px){
+      .field3{ grid-template-columns: 1fr; }
+      .formRow > label{ flex:0 0 90px; }
+    }
+
+    .sidePanel{
+      width:280px;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:14px;
+      padding:12px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.06);
+      position:sticky;
+      top:16px;
+      white-space:nowrap;
+      word-break:keep-all;
+    }
+
+    .toastHost{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      z-index:100000;
+      pointer-events:none;
+    }
+
+    .toast{
+      pointer-events:auto;
+      min-width:260px;
+      max-width:min(420px, 92vw);
+      background:#111;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:14px;
+      box-shadow:0 10px 26px rgba(0,0,0,0.22);
+      padding:10px 12px;
+      opacity:0;
+      transform:translateY(8px);
+      transition:opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .toast .tTitle{
+      font-weight:900;
+      font-size:13px;
+      letter-spacing:-0.2px;
+      margin-bottom:4px;
+    }
+
+    .toast .tBody{
+      font-size:12px;
+      opacity:0.92;
+      line-height:1.35;
+    }
+
+    .toast .tHint{
+      margin-top:6px;
+      font-size:11px;
+      opacity:0.75;
+    }
+
+    button,
+    .tab,
+    input[type="checkbox"],
+    label,
+    .badgeWeekly,
+    .btn2x {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      caret-color: transparent;
+    }
+    
+    .sidePanel h3{
+      margin:0;
+      font-size:14px;
+      font-weight:900;
+      padding:0;
+      border-bottom:none;
+    }
+
+    .sideEditBtn{
+      width:24px;
+      height:24px;
+      padding:0;
+      border-radius:8px;
+      font-weight:900;
+      line-height:1;
+      background:#f6f7fb;
+    }
+
+    .sideEditBtn:hover{
+      background:#eef0ff;
+      border-color:#bbb;
+    }
+
+    .sideValueWrap{
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:6px;
+    }
+
+    .sidePlusBtn{
+      width:24px;
+      height:24px;
+      padding:0;
+      border-radius:8px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .sideItem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;
+      margin-bottom:10px;
+      padding:8px 10px;
+      border:1px solid #eee;
+      border-radius:10px;
+      background:#fafafa;
+      white-space:nowrap;
+      word-break:keep-all;
+    }
+
+    .sideItem strong{
+      flex:0 0 78px;
+      font-weight:800;
+      color:#333;
+    }
+
+    .sideItem span{
+      flex:1 1 auto;
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sideSection{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed #e6e6e6;
+      font-size:12px;
+      color:#444;
+      font-weight:900;
+      letter-spacing:-0.2px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .sideSection .tag{
+      font-weight:900;
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #ddd;
+      background:#fafafa;
+      color:#333;
+    }
+
+    .sideGap{
+      height:12px;
+    }
+
+    .sideHead{
+      display:flex;
+      flex-wrap:nowrap;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      margin-bottom:10px;
+      padding-bottom:8px;
+      border-bottom:1px solid #eee;
+    }
+
+    .sideHead h3{
+      margin:0;
+      padding:0;
+      border:0;
+      flex:0 0 auto;
+    }
+
+    .editBtn{
+      flex:0 0 auto;
+      padding:4px 10px;
+      height:24px;
+      line-height:1;
+      border-radius:999px;
+    }
+
+    /* 캐릭터 좌/우 이동 버튼 */
+    #prevCharBtn,
+    #nextCharBtn{
+      width:36px;
+      padding:0;
+      text-align:center;
+      font-weight:900;
+    }
+
+    .editBtn:hover{
+      border-color:#bbb;
+      background:#fafafa;
+    }
+
+    /* ===== 모달 ===== */
+    .modalOverlay{
+      position:fixed;
+      left:0; top:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
+
+    .modal{
+      width:min(720px, 96vw);
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:14px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.18);
+      overflow:hidden;
+    }
+
+    .modalHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 14px;
+      border-bottom:1px solid #eee;
+      background:#fafafa;
+    }
+
+    .modalHeader strong{
+      font-size:14px;
+    }
+
+    .modalBody{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:70vh;
+      overflow:auto;
+    }
+
+    .formRow{
+      display:flex;
+      justify-content:flex-start;
+      align-items:flex-start;
+      gap:14px;
+    }
+
+    .formRow label{
+      flex:0 0 110px;
+      white-space:nowrap;
+      word-break:keep-all;
+      padding-top:8px;
+      font-size:13px;
+      font-weight:800;
+      color:#222;
+    }
+
+    .formRow input{
+      height:32px;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:12px;
+      border:1px solid #ddd;
+    }
+
+    .modalFooter{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      padding:12px 14px;
+      border-top:1px solid #eee;
+      background:#fafafa;
+    }
+
+    .btnPrimary{
+      border-color:#bbb;
+      background:#111;
+      color:#fff;
+      font-weight:900;
+    }
+
+    .btnPrimary:hover{
+      opacity:0.9;
+    }
+
+    .note{font-size:12px;color:var(--muted);}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>아이온2 숙제</h1>
+        <div class="note"></div>
+      </div>
+      <div class="hint">
+        체크하면 즉시 저장됩니다 (localStorage).<br/>
+        다른 PC/브라우저로는 자동 동기화되지 않습니다.
+      </div>
+    </header>
+
+    <div class="mainLayout">
+      <div class="card">
+        <div id="tabs" class="tabs"></div>
+
+        <div class="toolbar">
+          <div class="leftTools">
+            <span class="small">현재 캐릭터:</span>
+            <span id="currentCharLabel" class="status">-</span>
+
+            <span class="small">오늘:</span>
+            <span id="todayLabel" class="pill">-</span>
+
+            <button id="toggleViewBtn" type="button">전체 보기</button>
+
+            <span class="small">마지막 저장:</span>
+            <span id="lastSavedLabel" class="status">-</span>
+          </div>
+
+          <div class="rightTools">
+            <button id="addCharBtn" type="button">캐릭터 추가</button>
+            <button id="renameCharBtn" type="button">이름 수정(리네임)</button>
+            <button id="removeCharBtn" type="button" class="danger">현재 캐릭터 삭제</button>
+
+            <button id="resetCharBtn" type="button">이 캐릭터 전체 초기화</button>
+            <button id="resetAllBtn" type="button">모든 캐릭터 전체 초기화</button>
+
+            <button id="exportBtn" type="button">백업 내보내기(JSON)</button>
+            <button id="importBtn" type="button">복원 가져오기(JSON)</button>
+          </div>
+        </div>
+
+        <div class="gridWrap">
+          <table id="gridTable" aria-label="일일 숙제 체크표"></table>
+        </div>
+      </div>
+
+      <div class="sidePanel">
+        <div class="sideHead">
+          <h3>캐릭터 정보</h3>
+
+          <button id="prevCharBtn" type="button" class="editBtn" title="이전 캐릭터">◀</button>
+          <button id="editCharBtn" type="button" class="editBtn">수정</button>
+          <button id="nextCharBtn" type="button" class="editBtn" title="다음 캐릭터">▶</button>
+        </div>
+
+        <div class="sideItem">
+          <strong>이름</strong>
+          <span id="sideCharName">-</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>아이템레벨</strong>
+          <span id="sideItemLevel">0</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>총 오드에너지</strong>
+          <span class="sideValueWrap">
+            <span id="sideOddTotal">0</span>
+            <button id="sideOddAddBtn" type="button" class="sideEditBtn" title="추가 오드에너지 수정">✎</button>
+          </span>
+        </div>
+
+        
+        <div class="sideItem">
+          <strong>다음 오드</strong>
+          <span id="sideOddNext">-</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>충전 시간 보정</strong>
+          <span>
+            <button id="oddCalibResetBtn" type="button" class="danger" style="padding:4px 10px;border-radius:999px;">
+              보정초기화
+            </button>
+          </span>
+        </div>
+
+        <div class="sideGap"></div>
+
+        <div class="sideSection">
+          <span>보상가능</span>
+          <span class="tag">오드 40 기준</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>정복</strong>
+          <span id="sideConquest">0 회</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>초월</strong>
+          <span id="sideTranscend">0 회</span>
+        </div>
+
+        <div class="sideGap"></div>
+
+        <div class="sideSection">
+          <span>도전가능</span>
+          <span class="tag">잔여 횟수</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>악몽</strong>
+          <span class="sideValueWrap">
+            <span id="sideNightmareAvail">0 회</span>
+            <button id="sideNmAddBtn" type="button" class="sideEditBtn" title="악몽 추가 입장권 수정">✎</button>
+          </span>
+        </div>
+
+        <div class="sideItem">
+          <strong>일일던전</strong>
+          <span class="sideValueWrap">
+            <span id="sideDailyDungeonAvail">0 회</span>
+            <button id="sideDdAddBtn" type="button" class="sideEditBtn" title="일일던전 추가 입장권 수정">✎</button>
+          </span>
+        </div>
+
+        <div class="sideItem">
+          <strong>각성전</strong>
+          <span class="sideValueWrap">
+            <span id="sideAwakeningAvail">0 회</span>
+            <button id="sideAwAddBtn" type="button" class="sideEditBtn" title="각성전 추가 입장권 수정">✎</button>
+          </span>
+        </div>
+
+        <div class="sideItem">
+          <strong>토벌전</strong>
+          <span class="sideValueWrap">
+            <span id="sideRaidAvail">0 회</span>
+            <button id="sideRdAddBtn" type="button" class="sideEditBtn" title="토벌전 추가 입장권 수정">✎</button>
+          </span>
+        </div>
+
+        <div class="sideGap"></div>
+
+        <div class="sideSection">
+          <span>이벤트</span>
+          <span class="tag">슈고페스타</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>슈고페스타</strong>
+          <span id="sideShugoRemain">-</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>다음 시간</strong>
+          <span id="sideShugoNext">-</span>
+        </div>
+
+        <div class="sideItem">
+          <strong>알람</strong>
+          <span>
+            <button id="shugoAlarmBtn" type="button" class="editBtn" style="padding:4px 10px;border-radius:999px;">
+              알람 허용
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+
+    <footer>
+      - “오늘만 보기”는 오늘 요일 열만 표시합니다. 버튼으로 “전체 보기(월~일)”로 전환 가능합니다.<br/>
+      - 요일별 “전체체크/전체해제”는 해당 요일 열만 적용됩니다.<br/>
+      - <b>각성전/토벌전</b>은 주 1회: 어떤 요일을 체크해도 <b>전 요일에 동시에 반영</b>됩니다.<br/>
+      - <b>회랑</b>은 요일 칸 안에 <b>뿌리/날개/유황</b> 3개 체크로 관리됩니다.<br/>
+      - <b>정복</b>은 체크박스 대신 <b>+/- 카운터</b> (1회 = 오드에너지 40, 일반→충전 차감 / -는 정확 환급).<br/>
+      - <b>일일던전</b> 기본 입장권: <b>매주 수요일 새벽 5시</b>에 <b>7장으로 리필</b> (최대 7), 추가 입장권은 무제한.
+    </footer>
+
+    <!-- ===== 모달 ===== -->
+    <div id="editModal" class="modalOverlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="캐릭터 정보 수정">
+        <div class="modalHeader">
+          <strong>캐릭터 정보 수정</strong>
+          <button id="editModalCloseX" type="button">닫기</button>
+        </div>
+
+        <div class="modalBody">
+          <div class="formRow">
+            <label>캐릭터 이름</label>
+            <input id="editName" type="text" />
+          </div>
+
+          <div class="formRow">
+            <label>아이템레벨</label>
+            <input id="editItemLevel" type="number" min="0" />
+          </div>
+
+          <div class="formRow">
+            <label>오드에너지</label>
+            <div class="field3">
+              <div class="col">
+                <span>기본 오드에너지</span>
+                <input id="editOddNormal" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>추가 오드에너지</span>
+                <input id="editOddCharged" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>총 오드에너지</span>
+                <input id="editOddTotal" type="number" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <label>악몽</label>
+            <div class="field3">
+              <div class="col">
+                <span>기본 입장권</span>
+                <input id="editNightmareBase" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>추가 입장권</span>
+                <input id="editNightmareBonus" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>총 입장권</span>
+                <input id="editNightmareTotal" type="number" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <label>일일던전</label>
+            <div class="field3">
+              <div class="col">
+                <span>기본 입장권</span>
+                <input id="editDailyDungeonBase" type="number" min="0" max="7" />
+              </div>
+              <div class="col">
+                <span>추가 입장권</span>
+                <input id="editDailyDungeonBonus" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>총 입장권</span>
+                <input id="editDailyDungeonTotal" type="number" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <label>각성전</label>
+            <div class="field3">
+              <div class="col">
+                <span>기본 입장권</span>
+                <input id="editAwakeningBase" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>추가 입장권</span>
+                <input id="editAwakeningBonus" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>총 입장권</span>
+                <input id="editAwakeningTotal" type="number" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <label>토벌전</label>
+            <div class="field3">
+              <div class="col">
+                <span>기본 입장권</span>
+                <input id="editRaidBase" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>추가 입장권</span>
+                <input id="editRaidBonus" type="number" min="0" />
+              </div>
+              <div class="col">
+                <span>총 입장권</span>
+                <input id="editRaidTotal" type="number" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            ※ “잔여(사용가능)” 횟수를 수정합니다. (기본/추가 보유는 그대로 유지)<br/>
+            ※ 오드에너지는 일반/충전 값을 직접 수정합니다.<br/>
+            ※ 일일던전 기본 입장권은 주간 리필(수 05:00) 기준이므로, 원하면 수동으로도 수정 가능합니다.
+          </div>
+        </div>
+
+        <div class="modalFooter">
+          <button id="editModalCancel" type="button">취소</button>
+          <button id="editModalSave" type="button" class="btnPrimary">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      var DAYS = ["월","화","수","목","금","토","일"];
+
+      var HOERANG = "회랑";
+      var HOERANG_PARTS = ["뿌리","날개","유황"];
+
+      var CHO_WOL = "초월";
+      var CHO_WOL_PARTS = ["데우스","아르카니스"];
+
+      // ✅ 일일던전 추가
+      var TASKS = ["보급의뢰","주간보급의뢰","사명","악몽","일일던전","각성전","토벌전","정복",CHO_WOL,HOERANG];
+
+      var WEEKLY_TASK_MAP = {"각성전": true, "토벌전": true, "주간보급의뢰": true};
+
+      // ★ 키를 올려서(버전업) 저장 구조 꼬임 방지
+      var STORAGE_KEY = "dailyQuestManager.v6_2";
+
+      var SHUGO_PREF_KEY = "dailyQuestManager.shugoPrefs.v1";
+
+      var shugoPrefs = {
+        enabled: false  // 앱 내부에서 "슈고 알람 사용" 여부
+      };
+
+      var FALLBACK_KEYS = [
+        "dailyQuestManager.v6_1",
+        "dailyQuestManager.v5_1",
+        "dailyQuestManager.v5",
+        "dailyQuestManager.v4_2",
+        "dailyQuestManager.v4_1",
+        "dailyQuestManager.v4",
+        "dailyQuestManager.v3",
+        "dailyQuestManager.v2",
+        "dailyQuestManager.v1"
+      ];
+
+      var DEFAULT_CHARACTERS = ["캐릭1","캐릭2"];
+
+      var state = {
+        activeChar: "",
+        characters: [],
+        data: {},
+        oddEnergy: {},
+        conquestUsed: {},
+        conquestSpendLog: {},
+        transcendUsed: {},
+        transcendSpendLog: {},
+        viewMode: "today",
+        counts: {},
+        charMeta: {},
+        today: "월"
+      };
+
+      var SHUGO_KEY = "shugoFesta.v1";
+      var shugoState = {     
+        lastPreFiredIso: ""    // 3분 전 알림 중복 방지
+      };
+
+      function ensureToastHost(){
+        var host = document.getElementById("toastHost");
+        if (host) return host;
+
+        host = document.createElement("div");
+        host.id = "toastHost";
+        host.className = "toastHost";
+        document.body.appendChild(host);
+        return host;
+      }
+
+      function showToast(title, body, ms){
+        if (typeof ms !== "number" || ms <= 0) ms = 3500;
+
+        var host = ensureToastHost();
+
+        var el = document.createElement("div");
+        el.className = "toast";
+
+        var t = document.createElement("div");
+        t.className = "tTitle";
+        t.textContent = title || "";
+
+        var b = document.createElement("div");
+        b.className = "tBody";
+        b.textContent = body || "";
+
+        el.appendChild(t);
+        el.appendChild(b);
+
+        host.appendChild(el);
+
+        // 애니메이션 show
+        setTimeout(function(){
+          el.classList.add("show");
+        }, 10);
+
+        // 자동 제거
+        setTimeout(function(){
+          el.classList.remove("show");
+          setTimeout(function(){
+            try{ el.remove(); } catch(e){}
+          }, 220);
+        }, ms);
+      }
+
+      function loadShugoState(){
+        try{
+          var raw = localStorage.getItem(SHUGO_KEY);
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object"){
+            if (typeof parsed.lastPreFiredIso === "string") shugoState.lastPreFiredIso = parsed.lastPreFiredIso;
+          }
+        } catch(e){}
+      }
+
+
+      function saveShugoState(){
+        try{
+          localStorage.setItem(SHUGO_KEY, JSON.stringify(shugoState));
+        } catch(e){}
+      }
+      
+
+      function askSetNumber(title, currentValue, hint){
+        var s = prompt(
+          title + "\n" +
+          hint + "\n\n" +
+          "현재 값: " + currentValue + "\n" +
+          "새 값 입력 (0 이상, 취소=유지)"
+        );
+        if (s === null) return null;
+
+        s = String(s).trim();
+        var n = parseInt(s, 10);
+        if (isNaN(n) || n < 0){
+          alert("올바른 숫자를 입력하세요. (0 이상)");
+          return null;
+        }
+        return n;
+      }
+
+      // ✅ 추가 오드에너지(charged) 값을 '설정'
+      function setBonusOdd(char, newValue){
+        ensureCharStructures(char);
+
+        state.oddEnergy[char].charged = newValue;
+
+        if (state.oddEnergy[char].charged < 0) state.oddEnergy[char].charged = 0;
+
+        save("추가 오드에너지 설정=" + newValue);
+        render();
+      }
+
+      // ✅ 추가 입장권(bonus) 값을 '설정'
+      function setBonusTicket(char, type, newValue, label){
+        ensureCharStructures(char);
+
+        var c = state.counts[char][type];
+        if (!c) return;
+
+        c.bonus = newValue;
+
+        if (c.bonus < 0) c.bonus = 0;
+
+        // used가 총보유(base+bonus)보다 크면 clamp
+        var total = (c.base || 0) + (c.bonus || 0);
+        if (typeof c.used !== "number" || c.used < 0) c.used = 0;
+        if (c.used > total) c.used = total;
+
+        save((label || type) + " 추가입장권 설정=" + newValue);
+        render();
+      }
+
+
+      function getNextShugoTime(now){
+        var d = new Date(now.getTime());
+        var min = d.getMinutes();
+
+        if (min < 15){
+          d.setMinutes(15, 0, 0);
+          return d;
+        }
+
+        if (min < 45){
+          d.setMinutes(45, 0, 0);
+          return d;
+        }
+
+        d.setHours(d.getHours() + 1);
+        d.setMinutes(15, 0, 0);
+        return d;
+      }
+
+      function playRewardSound(){
+        try{
+          var ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var now = ctx.currentTime;
+
+          function tone(freq, start, dur){
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = "triangle";
+            o.frequency.value = freq;
+            g.gain.value = 0.07;
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start(start);
+            o.stop(start + dur);
+          }
+
+          tone(523, now + 0.0, 0.2);
+          tone(659, now + 0.25, 0.2);
+          tone(784, now + 0.5, 0.25);
+          tone(1046, now + 0.8, 0.4);
+
+          setTimeout(function(){
+            ctx.close();
+          }, 2000);
+        } catch(e){}
+      }
+
+      function playShugoFestaSound(){
+        try{
+          var ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var now = ctx.currentTime;
+
+          function tone(freq, start, dur, vol){
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.value = freq;
+            gain.gain.value = vol;
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + dur);
+          }
+
+          // 🎵 짧고 신나는 아케이드 리프 (총 약 2.2초)
+          tone(880, now + 0.0, 0.18, 0.06);
+          tone(1175, now + 0.2, 0.18, 0.06);
+          tone(1568, now + 0.4, 0.25, 0.07);
+
+          tone(1175, now + 0.8, 0.18, 0.06);
+          tone(1568, now + 1.0, 0.22, 0.07);
+
+          tone(1760, now + 1.4, 0.35, 0.08);
+
+          setTimeout(function(){
+            ctx.close();
+          }, 2600);
+        } catch(e){}
+      }
+
+      function notifyShugo(title, body){
+        // Notification 우선
+        if ("Notification" in window && Notification.permission === "granted"){
+          try{
+            new Notification(title, { body: body });
+          } catch(e){}
+          return true;
+        }
+        return false;
+      }
+
+      function requestShugoPermission(){
+        // 버튼 클릭에서 호출되므로 "미리듣기" 가능
+        playShugoFestaSound();
+
+        // 알림 미지원이면 앱은 "소리 알람"만 ON 상태로 저장
+        if (!("Notification" in window)){
+          shugoPrefs.enabled = true;
+          saveShugoPrefs();
+          updateShugoAlarmBtn();
+          alert("이 브라우저는 알림(Notification)을 지원하지 않습니다.\n소리 알람만 사용합니다.");
+          return;
+        }
+
+        // 이미 허용이면: 앱 내부 ON 저장 + 테스트 알림
+        if (Notification.permission === "granted"){
+          shugoPrefs.enabled = true;
+          saveShugoPrefs();
+          updateShugoAlarmBtn();
+
+          try{
+            new Notification("슈고페스타 알람 테스트", { body: "3분 전 알림 예시입니다." });
+          } catch(e){}
+          return;
+        }
+
+        // 아직 미결정이면 요청
+        Notification.requestPermission().then(function(p){
+          if (p === "granted"){
+            shugoPrefs.enabled = true;
+            saveShugoPrefs();
+            updateShugoAlarmBtn();
+
+            try{
+              new Notification("슈고페스타 알람 허용 완료", { body: "3분 전 알림으로 알려드릴게요!" });
+            } catch(e){}
+            return;
+          }
+
+          // 거부/기타
+          shugoPrefs.enabled = false;
+          saveShugoPrefs();
+          updateShugoAlarmBtn();
+
+          alert("알림이 차단되었습니다.\n브라우저 설정에서 허용하면 알림 팝업도 함께 뜹니다.\n(소리 알람은 버튼 눌러 미리듣기만 가능)");
+        });
+      }
+
+      function updateShugoAlarmBtn(){
+        var btn = document.getElementById("shugoAlarmBtn");
+        if (!btn) return;
+
+        // ON/OFF 표기 (앱 내부 enabled 기준)
+        if (shugoPrefs.enabled){
+          btn.textContent = "알람 ON / 미리듣기";
+          btn.classList.add("btnPrimary");
+        } else {
+          btn.textContent = "알람 허용 / 미리듣기";
+          btn.classList.remove("btnPrimary");
+        }
+      }
+
+      function updateShugoPanel(){
+        if (!shugoPrefs.enabled) return;
+        var remainEl = document.getElementById("sideShugoRemain");
+        var nextEl = document.getElementById("sideShugoNext");
+        if (!remainEl || !nextEl) return;
+
+        var now = new Date();
+        var next = getNextShugoTime(now);
+        var remain = next.getTime() - now.getTime();
+
+        remainEl.textContent = formatRemainHMS(remain) + " 남음";
+        nextEl.textContent = formatDateHM(next) + " (15/45분)";
+        // ✅ 3분 전(180초) 예고 알림: 남은시간이 180초 구간에 들어오면 1회만
+        if (remain <= 180000 && remain > 178800){ // 180.0s ~ 178.8s (약 1.2초 윈도우)
+          var preKey = next.toISOString();
+
+          if (shugoState.lastPreFiredIso !== preKey){
+            shugoState.lastPreFiredIso = preKey;
+            saveShugoState();
+
+            var okPre = notifyShugo("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")");
+            
+            playRewardSound();
+            if (!okPre && (!("Notification" in window) || Notification.permission !== "granted")){
+              showToast("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")", 3500);
+            }
+          }
+        }
+      }
+
+      function formatRemainHMS(ms){
+        if (ms < 0) ms = 0;
+        var sec = Math.floor(ms / 1000);
+        var m = Math.floor(sec / 60);
+        var s = sec % 60;
+        return m + "분 " + pad2(s) + "초";
+      }
+
+      function formatDateHM(d){
+        return pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+      }
+
+      function switchCharByDelta(delta){
+        var list = state.characters || [];
+        if (!list.length) return;
+
+        var idx = list.indexOf(state.activeChar);
+        if (idx < 0) idx = 0;
+
+        var nextIdx = idx + delta;
+
+        if (nextIdx < 0) nextIdx = list.length - 1;
+        if (nextIdx >= list.length) nextIdx = 0;
+
+        setActiveChar(list[nextIdx]);
+      }
+
+      function nowIso(){ return new Date().toISOString(); }
+
+      function getTodayKoreanDay(){
+        var d = new Date();
+        var n = d.getDay();
+        if (n === 0) return "일";
+        if (n === 1) return "월";
+        if (n === 2) return "화";
+        if (n === 3) return "수";
+        if (n === 4) return "목";
+        if (n === 5) return "금";
+        return "토";
+      }
+
+      function isWeeklyTask(taskName){
+        return WEEKLY_TASK_MAP[taskName] ? true : false;
+      }
+
+      function buildDefaultCharData(){
+        var d = {};
+        var t, day;
+        for (t = 0; t < TASKS.length; t += 1){
+          if (TASKS[t] === HOERANG){
+            d[HOERANG] = {};
+            for (day = 0; day < DAYS.length; day += 1){
+              d[HOERANG][DAYS[day]] = { "뿌리": false, "날개": false, "유황": false };
+            }
+          } else {
+            d[TASKS[t]] = {};
+            for (day = 0; day < DAYS.length; day += 1){
+              d[TASKS[t]][DAYS[day]] = false;
+            }
+          }
+          if (TASKS[t] === CHO_WOL){
+            d[CHO_WOL] = {};
+            for (day = 0; day < DAYS.length; day += 1){
+              d[CHO_WOL][DAYS[day]] = { "데우스": 0, "아르카니스": 0 };
+            }
+          }
+        }
+        return d;
+      }
+
+      function buildDefaultOddEnergy(){
+        return {
+          normal: 0,
+          charged: 0,
+          lastBaseCharge: ""   // 마지막 기본 오드 충전 기준 시각
+        };
+      }
+
+
+      function buildDefaultCount(){
+        return {
+          base: 0,
+          bonus: 0,
+          used: 0,
+          lastCharge: ""
+        };
+      }
+
+      function buildDefaultConquestUsed(){
+        var o = {};
+        var i;
+        for (i = 0; i < DAYS.length; i += 1){
+          o[DAYS[i]] = 0;
+        }
+        return o;
+      }
+
+      function buildDefaultTranscendUsed(){
+        var o = {};
+        var i;
+        for (i = 0; i < DAYS.length; i += 1){
+          o[DAYS[i]] = { "데우스": 0, "아르카니스": 0 };
+        }
+        return o;
+      }
+
+      function buildDefaultTranscendLog(){
+        var o = {};
+        var i;
+        for (i = 0; i < DAYS.length; i += 1){
+          o[DAYS[i]] = { "데우스": [], "아르카니스": [] };
+        }
+        return o;
+      }
+
+      function buildDefaultConquestLog(){
+        var o = {};
+        var i;
+        for (i = 0; i < DAYS.length; i += 1){
+          o[DAYS[i]] = [];
+        }
+        return o;
+      }
+
+      function defaultStateData(chars){
+        var data = {};
+        var i;
+        for (i = 0; i < chars.length; i += 1){
+          data[chars[i]] = buildDefaultCharData();
+        }
+        return data;
+      }
+
+      function normalizeWeekly(payload){
+        var c, charName, t, day;
+        for (c = 0; c < payload.characters.length; c += 1){
+          charName = payload.characters[c];
+          for (t = 0; t < TASKS.length; t += 1){
+            if (!isWeeklyTask(TASKS[t])) continue;
+
+            var anyTrue = false;
+            for (day = 0; day < DAYS.length; day += 1){
+              if (payload.data[charName][TASKS[t]][DAYS[day]] === true){
+                anyTrue = true;
+              }
+            }
+            if (anyTrue){
+              for (day = 0; day < DAYS.length; day += 1){
+                payload.data[charName][TASKS[t]][DAYS[day]] = true;
+              }
+            }
+          }
+        }
+      }
+
+      function migrateFromLegacyPayload(parsed){
+        if (parsed && parsed.data && parsed.characters && Array.isArray(parsed.characters)){
+          return parsed;
+        }
+
+        var migrated = {
+          characters: DEFAULT_CHARACTERS.slice(0),
+          activeChar: DEFAULT_CHARACTERS[0],
+          viewMode: "today",
+          data: defaultStateData(DEFAULT_CHARACTERS),
+          oddEnergy: {},
+          conquestUsed: {},
+          conquestSpendLog: {},
+          transcendUsed: {},
+          transcendSpendLog: {},
+          counts: {},
+          charMeta: {}
+        };
+
+        if (!parsed || typeof parsed !== "object"){
+          return migrated;
+        }
+
+        if (parsed.data && typeof parsed.data === "object"){
+          var legacyKeys = Object.keys(parsed.data);
+          if (legacyKeys.length > 0){
+            migrated.characters = legacyKeys.slice(0);
+            migrated.activeChar = parsed.activeJob || legacyKeys[0];
+            migrated.viewMode = parsed.viewMode === "all" ? "all" : "today";
+            migrated.data = {};
+            migrated.oddEnergy = {};
+            migrated.conquestUsed = {};
+            migrated.conquestSpendLog = {};
+            migrated.transcendUsed = {};
+            migrated.transcendSpendLog = {};
+            migrated.counts = {};
+            migrated.charMeta = {};
+
+            var i;
+            for (i = 0; i < legacyKeys.length; i += 1){
+              migrated.data[legacyKeys[i]] = buildDefaultCharData();
+              migrated.oddEnergy[legacyKeys[i]] = buildDefaultOddEnergy();
+              migrated.conquestUsed[legacyKeys[i]] = buildDefaultConquestUsed();
+              migrated.conquestSpendLog[legacyKeys[i]] = buildDefaultConquestLog();
+              migrated.transcendUsed[legacyKeys[i]] = buildDefaultTranscendUsed();
+              migrated.transcendSpendLog[legacyKeys[i]] = buildDefaultTranscendLog();
+              migrated.counts[legacyKeys[i]] = {
+                nightmare: buildDefaultCount(),
+                dailyDungeon: buildDefaultCount(),
+                raid: buildDefaultCount(),
+                awakening: buildDefaultCount()
+              };
+              migrated.charMeta[legacyKeys[i]] = { itemLevel: 0 };
+            }
+
+            var j, t, day, legacyChar, legacyObj;
+            for (j = 0; j < legacyKeys.length; j += 1){
+              legacyChar = legacyKeys[j];
+              legacyObj = parsed.data[legacyChar];
+
+              for (t = 0; t < TASKS.length; t += 1){
+                if (TASKS[t] === HOERANG){
+                  var legacyRoot = legacyObj["회랑-뿌리"];
+                  var legacyWing = legacyObj["회랑-날개"];
+                  var legacySulfur = legacyObj["회랑-유황"];
+                  var legacyOne = legacyObj["회랑"];
+
+                  for (day = 0; day < DAYS.length; day += 1){
+                    if (legacyOne && typeof legacyOne[DAYS[day]] === "boolean"){
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["뿌리"] = legacyOne[DAYS[day]];
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["날개"] = legacyOne[DAYS[day]];
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["유황"] = legacyOne[DAYS[day]];
+                    }
+                    if (legacyRoot && typeof legacyRoot[DAYS[day]] === "boolean"){
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["뿌리"] = legacyRoot[DAYS[day]];
+                    }
+                    if (legacyWing && typeof legacyWing[DAYS[day]] === "boolean"){
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["날개"] = legacyWing[DAYS[day]];
+                    }
+                    if (legacySulfur && typeof legacySulfur[DAYS[day]] === "boolean"){
+                      migrated.data[legacyChar][HOERANG][DAYS[day]]["유황"] = legacySulfur[DAYS[day]];
+                    }
+                  }
+                  continue;
+                }
+
+                if (legacyObj[TASKS[t]] && typeof legacyObj[TASKS[t]] === "object"){
+                  for (day = 0; day < DAYS.length; day += 1){
+                    if (typeof legacyObj[TASKS[t]][DAYS[day]] === "boolean"){
+                      migrated.data[legacyChar][TASKS[t]][DAYS[day]] = legacyObj[TASKS[t]][DAYS[day]];
+                    }
+                  }
+                }
+              }
+            }
+
+            normalizeWeekly(migrated);
+          }
+        }
+
+        return migrated;
+      }
+
+      function pickRaw(){
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return raw;
+
+        var i;
+        for (i = 0; i < FALLBACK_KEYS.length; i += 1){
+          raw = localStorage.getItem(FALLBACK_KEYS[i]);
+          if (raw) return raw;
+        }
+        return "";
+      }
+
+      function load(){
+        state.today = getTodayKoreanDay();
+
+        var raw = pickRaw();
+        if (!raw){
+          state.characters = DEFAULT_CHARACTERS.slice(0);
+          state.activeChar = state.characters[0];
+          state.viewMode = "today";
+          state.data = defaultStateData(state.characters);
+          state.oddEnergy = {};
+          state.conquestUsed = {};
+          state.conquestSpendLog = {};
+          state.transcendUsed = {};
+          state.transcendSpendLog = {};
+          state.counts = {};
+          state.charMeta = {};
+
+          var i;
+          for (i = 0; i < state.characters.length; i += 1){
+            var cn = state.characters[i];
+            state.oddEnergy[cn] = buildDefaultOddEnergy();
+            state.conquestUsed[cn] = buildDefaultConquestUsed();
+            state.conquestSpendLog[cn] = buildDefaultConquestLog();
+            state.transcendUsed[cn] = buildDefaultTranscendUsed();
+            state.transcendSpendLog[cn] = buildDefaultTranscendLog();
+            state.counts[cn] = {
+              nightmare: buildDefaultCount(),
+              dailyDungeon: buildDefaultCount(),
+              raid: buildDefaultCount(),
+              awakening: buildDefaultCount()
+            };
+            state.charMeta[cn] = { itemLevel: 0 };
+          }
+
+          save("초기 생성");
+          return;
+        }
+
+        try{
+          var parsed = JSON.parse(raw);
+          var migrated = migrateFromLegacyPayload(parsed);
+
+          state.characters = (migrated.characters && migrated.characters.length)
+            ? migrated.characters.slice(0)
+            : DEFAULT_CHARACTERS.slice(0);
+
+          state.activeChar = migrated.activeChar || state.characters[0];
+          state.viewMode = migrated.viewMode === "all" ? "all" : "today";
+
+          state.data = migrated.data || {};
+          state.charMeta = migrated.charMeta && typeof migrated.charMeta === "object" ? migrated.charMeta : {};
+          state.oddEnergy = migrated.oddEnergy && typeof migrated.oddEnergy === "object" ? migrated.oddEnergy : {};
+          state.conquestUsed = migrated.conquestUsed && typeof migrated.conquestUsed === "object" ? migrated.conquestUsed : {};
+          state.conquestSpendLog = migrated.conquestSpendLog && typeof migrated.conquestSpendLog === "object" ? migrated.conquestSpendLog : {};
+          state.counts = migrated.counts && typeof migrated.counts === "object" ? migrated.counts : {};
+          state.transcendUsed = migrated.transcendUsed && typeof migrated.transcendUsed === "object" ? migrated.transcendUsed : {};
+          state.transcendSpendLog = migrated.transcendSpendLog && typeof migrated.transcendSpendLog === "object" ? migrated.transcendSpendLog : {};
+
+          var i;
+          for (i = 0; i < state.characters.length; i += 1){
+            var cn = state.characters[i];
+
+            if (!state.data[cn]) state.data[cn] = buildDefaultCharData();
+
+            if (!state.oddEnergy[cn]) state.oddEnergy[cn] = buildDefaultOddEnergy();
+            if (typeof state.oddEnergy[cn].normal !== "number") state.oddEnergy[cn].normal = 0;
+            if (typeof state.oddEnergy[cn].charged !== "number") state.oddEnergy[cn].charged = 0;
+
+            if (!state.charMeta[cn]) state.charMeta[cn] = { itemLevel: 0 };
+            if (typeof state.charMeta[cn].itemLevel !== "number") state.charMeta[cn].itemLevel = 0;
+
+            if (!state.transcendUsed[cn]) state.transcendUsed[cn] = buildDefaultTranscendUsed();
+            if (!state.transcendSpendLog[cn]) state.transcendSpendLog[cn] = buildDefaultTranscendLog();
+
+            if (!state.conquestUsed[cn]) state.conquestUsed[cn] = buildDefaultConquestUsed();
+            if (!state.conquestSpendLog[cn]) state.conquestSpendLog[cn] = buildDefaultConquestLog();
+
+            if (!state.counts[cn]) {
+              state.counts[cn] = {
+                nightmare: buildDefaultCount(),
+                dailyDungeon: buildDefaultCount(),
+                raid: buildDefaultCount(),
+                awakening: buildDefaultCount()
+              };
+            }
+            if (!state.counts[cn].dailyDungeon) {
+              state.counts[cn].dailyDungeon = buildDefaultCount();
+            }
+
+            var di;
+            for (di = 0; di < DAYS.length; di += 1){
+              var day = DAYS[di];
+              if (typeof state.conquestUsed[cn][day] !== "number") state.conquestUsed[cn][day] = 0;
+              if (!Array.isArray(state.conquestSpendLog[cn][day])) state.conquestSpendLog[cn][day] = [];
+              if (!state.transcendUsed[cn][day]) state.transcendUsed[cn][day] = { "데우스": 0, "아르카니스": 0 };
+              if (!state.transcendSpendLog[cn][day]) state.transcendSpendLog[cn][day] = { "데우스": [], "아르카니스": [] };
+            }
+          }
+
+          if (state.characters.indexOf(state.activeChar) < 0){
+            state.activeChar = state.characters[0];
+          }
+
+          normalizeWeekly({ characters: state.characters, data: state.data });
+
+          save("로드/정규화");
+        } catch(e){
+          state.characters = DEFAULT_CHARACTERS.slice(0);
+          state.activeChar = state.characters[0];
+          state.viewMode = "today";
+          state.data = defaultStateData(state.characters);
+          state.oddEnergy = {};
+          state.conquestUsed = {};
+          state.conquestSpendLog = {};
+          state.transcendUsed = {};
+          state.transcendSpendLog = {};
+          state.counts = {};
+          state.charMeta = {};
+
+          var i;
+          for (i = 0; i < state.characters.length; i += 1){
+            var cn = state.characters[i];
+            state.oddEnergy[cn] = buildDefaultOddEnergy();
+            state.conquestUsed[cn] = buildDefaultConquestUsed();
+            state.conquestSpendLog[cn] = buildDefaultConquestLog();
+            state.transcendUsed[cn] = buildDefaultTranscendUsed();
+            state.transcendSpendLog[cn] = buildDefaultTranscendLog();
+            state.counts[cn] = {
+              nightmare: buildDefaultCount(),
+              dailyDungeon: buildDefaultCount(),
+              raid: buildDefaultCount(),
+              awakening: buildDefaultCount()
+            };
+            state.charMeta[cn] = { itemLevel: 0 };
+          }
+
+          save("손상 복구(초기화)");
+        }
+      }
+
+      function save(reason){
+        var payload = {
+          characters: state.characters.slice(0),
+          activeChar: state.activeChar,
+          viewMode: state.viewMode,
+          data: state.data,
+
+          oddEnergy: state.oddEnergy,
+          conquestUsed: state.conquestUsed,
+          conquestSpendLog: state.conquestSpendLog,
+
+          transcendUsed: state.transcendUsed,
+          transcendSpendLog: state.transcendSpendLog,
+
+          counts: state.counts,
+          charMeta: state.charMeta,
+          meta: { savedAt: nowIso(), reason: reason || "auto" }
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        updateSavedLabel(payload.meta.savedAt);
+      }
+
+      function loadShugoPrefs(){
+        try{
+          var raw = localStorage.getItem(SHUGO_PREF_KEY);
+          if (!raw) return;
+
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.enabled === "boolean"){
+            shugoPrefs.enabled = parsed.enabled;
+          }
+        } catch(e){}
+      }
+
+      function saveShugoPrefs(){
+        try{
+          localStorage.setItem(SHUGO_PREF_KEY, JSON.stringify({ enabled: !!shugoPrefs.enabled }));
+        } catch(e){}
+      }
+
+      function updateSavedLabel(iso){
+        var el = document.getElementById("lastSavedLabel");
+        if (!el) return;
+        try{ el.textContent = new Date(iso).toLocaleString(); }
+        catch(e){ el.textContent = iso; }
+      }
+
+      function setActiveChar(name){
+        state.activeChar = name;
+        save("캐릭터 변경");
+        render();
+      }
+
+      function toggleViewMode(){
+        state.viewMode = (state.viewMode === "today") ? "all" : "today";
+        save("보기 모드 변경");
+        render();
+      }
+
+      function getVisibleDays(){
+        if (state.viewMode === "today"){
+          return [state.today];
+        }
+        return DAYS.slice(0);
+      }
+
+      function normalizeCharName(name){
+        if (!name) return "";
+        name = String(name);
+        name = name.replace(/\s+/g," ").trim();
+        return name;
+      }
+
+      function ensureCharStructures(charName){
+        if (!state.data[charName]) state.data[charName] = buildDefaultCharData();
+        if (!state.oddEnergy[charName]) state.oddEnergy[charName] = buildDefaultOddEnergy();
+        if (!state.conquestUsed[charName]) state.conquestUsed[charName] = buildDefaultConquestUsed();
+        if (!state.conquestSpendLog[charName]) state.conquestSpendLog[charName] = buildDefaultConquestLog();
+
+        if (!state.transcendUsed[charName]) state.transcendUsed[charName] = buildDefaultTranscendUsed();
+        if (!state.transcendSpendLog[charName]) state.transcendSpendLog[charName] = buildDefaultTranscendLog();
+
+        var di;
+        for (di = 0; di < DAYS.length; di += 1){
+          var day = DAYS[di];
+          if (typeof state.conquestUsed[charName][day] !== "number") state.conquestUsed[charName][day] = 0;
+          if (!Array.isArray(state.conquestSpendLog[charName][day])) state.conquestSpendLog[charName][day] = [];
+          if (!state.transcendUsed[charName][day]) state.transcendUsed[charName][day] = { "데우스": 0, "아르카니스": 0 };
+          if (!state.transcendSpendLog[charName][day]) state.transcendSpendLog[charName][day] = { "데우스": [], "아르카니스": [] };
+        }
+
+        if (!state.counts[charName]) {
+          state.counts[charName] = {
+            nightmare: buildDefaultCount(),
+            dailyDungeon: buildDefaultCount(),
+            raid: buildDefaultCount(),
+            awakening: buildDefaultCount()
+          };
+        }
+        if (!state.counts[charName].dailyDungeon) {
+          state.counts[charName].dailyDungeon = buildDefaultCount();
+        }
+
+        if (!state.charMeta[charName]) {
+          state.charMeta[charName] = { itemLevel: 0 };
+        }
+        if (typeof state.charMeta[charName].itemLevel !== "number") {
+          state.charMeta[charName].itemLevel = 0;
+        }
+      }
+
+      function addCharacter(){
+        var name = prompt("추가할 캐릭터 이름을 입력하세요 (중복 불가)");
+        if (name === null) return;
+
+        name = normalizeCharName(name);
+        if (name === ""){
+          alert("이름이 비었습니다.");
+          return;
+        }
+        if (state.characters.indexOf(name) >= 0){
+          alert("이미 존재하는 이름입니다.");
+          return;
+        }
+
+        state.characters.push(name);
+        ensureCharStructures(name);
+
+        state.activeChar = name;
+
+        save("캐릭터 추가 (" + name + ")");
+        render();
+      }
+
+      function renameCurrentCharacter(){
+        var oldName = state.activeChar;
+        var input = prompt("새 캐릭터 이름을 입력하세요", oldName);
+        if (input === null) return;
+
+        var newName = normalizeCharName(input);
+        if (newName === ""){
+          alert("이름이 비었습니다.");
+          return;
+        }
+        if (newName === oldName) return;
+        if (state.characters.indexOf(newName) >= 0){
+          alert("이미 존재하는 이름입니다.");
+          return;
+        }
+
+        var idx = state.characters.indexOf(oldName);
+        if (idx < 0){
+          alert("현재 캐릭터를 찾을 수 없습니다.");
+          return;
+        }
+
+        state.characters[idx] = newName;
+
+        state.data[newName] = state.data[oldName] ? state.data[oldName] : buildDefaultCharData();
+        if (state.data[oldName]) delete state.data[oldName];
+
+        state.oddEnergy[newName] = state.oddEnergy[oldName] ? state.oddEnergy[oldName] : buildDefaultOddEnergy();
+        if (state.oddEnergy[oldName]) delete state.oddEnergy[oldName];
+
+        state.conquestUsed[newName] = state.conquestUsed[oldName] ? state.conquestUsed[oldName] : buildDefaultConquestUsed();
+        if (state.conquestUsed[oldName]) delete state.conquestUsed[oldName];
+
+        state.conquestSpendLog[newName] = state.conquestSpendLog[oldName] ? state.conquestSpendLog[oldName] : buildDefaultConquestLog();
+        if (state.conquestSpendLog[oldName]) delete state.conquestSpendLog[oldName];
+
+        state.transcendUsed[newName] = state.transcendUsed[oldName] ? state.transcendUsed[oldName] : buildDefaultTranscendUsed();
+        if (state.transcendUsed[oldName]) delete state.transcendUsed[oldName];
+
+        state.transcendSpendLog[newName] = state.transcendSpendLog[oldName] ? state.transcendSpendLog[oldName] : buildDefaultTranscendLog();
+        if (state.transcendSpendLog[oldName]) delete state.transcendSpendLog[oldName];
+
+        state.counts[newName] = state.counts[oldName] ? state.counts[oldName] : {
+          nightmare: buildDefaultCount(),
+          dailyDungeon: buildDefaultCount(),
+          raid: buildDefaultCount(),
+          awakening: buildDefaultCount()
+        };
+        if (state.counts[oldName]) delete state.counts[oldName];
+
+        state.charMeta[newName] = state.charMeta[oldName] ? state.charMeta[oldName] : { itemLevel: 0 };
+        if (state.charMeta[oldName]) delete state.charMeta[oldName];
+
+        state.activeChar = newName;
+
+        save("캐릭터 리네임 (" + oldName + " -> " + newName + ")");
+        render();
+      }
+
+      function removeCurrentCharacter(){
+        if (state.characters.length <= 1){
+          alert("최소 1개의 캐릭터는 남아있어야 합니다.");
+          return;
+        }
+
+        var target = state.activeChar;
+        var ok = confirm("[" + target + "] 캐릭터를 삭제할까요? (해당 기록도 함께 삭제)");
+        if (!ok) return;
+
+        var idx = state.characters.indexOf(target);
+        if (idx >= 0) state.characters.splice(idx, 1);
+
+        if (state.data[target]) delete state.data[target];
+        if (state.oddEnergy[target]) delete state.oddEnergy[target];
+        if (state.conquestUsed[target]) delete state.conquestUsed[target];
+        if (state.conquestSpendLog[target]) delete state.conquestSpendLog[target];
+        if (state.transcendUsed[target]) delete state.transcendUsed[target];
+        if (state.transcendSpendLog[target]) delete state.transcendSpendLog[target];
+        if (state.counts[target]) delete state.counts[target];
+        if (state.charMeta[target]) delete state.charMeta[target];
+
+        var newIdx = idx;
+        if (newIdx >= state.characters.length) newIdx = state.characters.length - 1;
+        state.activeChar = state.characters[newIdx];
+
+        save("캐릭터 삭제 (" + target + ")");
+        render();
+      }
+
+      function getValue(charName, taskName, dayName, partName){
+        if (!state.data[charName]) return false;
+
+        if (taskName === HOERANG){
+          var cell = state.data[charName][HOERANG] && state.data[charName][HOERANG][dayName];
+          if (!cell || typeof cell !== "object") return false;
+          return cell[partName] === true;
+        }
+
+        var t = state.data[charName][taskName];
+        if (!t || typeof t !== "object") return false;
+        return t[dayName] === true;
+      }
+
+      function setValue(charName, taskName, dayName, value, partName){
+        ensureCharStructures(charName);
+
+        if (taskName === HOERANG){
+          var cell = state.data[charName][HOERANG][dayName];
+          if (!cell || typeof cell !== "object"){
+            state.data[charName][HOERANG][dayName] = { "뿌리": false, "날개": false, "유황": false };
+          }
+          state.data[charName][HOERANG][dayName][partName] = value ? true : false;
+          return;
+        }
+
+        if (isWeeklyTask(taskName)){
+          var di;
+          for (di = 0; di < DAYS.length; di += 1){
+            state.data[charName][taskName][DAYS[di]] = value ? true : false;
+          }
+          return;
+        }
+
+        state.data[charName][taskName][dayName] = value ? true : false;
+      }
+
+      function setAllForDay(charName, dayName, value){
+        var t, part;
+        for (t = 0; t < TASKS.length; t += 1){
+          if (TASKS[t] === "정복"){
+            continue;
+          }
+
+          if (TASKS[t] === HOERANG){
+            for (part = 0; part < HOERANG_PARTS.length; part += 1){
+              setValue(charName, HOERANG, dayName, value, HOERANG_PARTS[part]);
+            }
+            continue;
+          }
+          setValue(charName, TASKS[t], dayName, value);
+        }
+      }
+
+      function resetChar(charName){
+        state.data[charName] = buildDefaultCharData();
+        state.oddEnergy[charName] = buildDefaultOddEnergy();
+        state.conquestUsed[charName] = buildDefaultConquestUsed();
+        state.conquestSpendLog[charName] = buildDefaultConquestLog();
+        state.transcendUsed[charName] = buildDefaultTranscendUsed();
+        state.transcendSpendLog[charName] = buildDefaultTranscendLog();
+        state.counts[charName] = {
+          nightmare: buildDefaultCount(),
+          dailyDungeon: buildDefaultCount(),
+          raid: buildDefaultCount(),
+          awakening: buildDefaultCount()
+        };
+        state.charMeta[charName] = { itemLevel: 0 };
+
+        save("캐릭터 초기화 (" + charName + ")");
+        render();
+      }
+
+      function resetAll(){
+        state.data = defaultStateData(state.characters);
+        state.oddEnergy = {};
+        state.conquestUsed = {};
+        state.conquestSpendLog = {};
+        state.transcendUsed = {};
+        state.transcendSpendLog = {};
+        state.counts = {};
+        state.charMeta = {};
+
+        var i;
+        for (i = 0; i < state.characters.length; i += 1){
+          var cn = state.characters[i];
+          state.oddEnergy[cn] = buildDefaultOddEnergy();
+          state.conquestUsed[cn] = buildDefaultConquestUsed();
+          state.conquestSpendLog[cn] = buildDefaultConquestLog();
+          state.transcendUsed[cn] = buildDefaultTranscendUsed();
+          state.transcendSpendLog[cn] = buildDefaultTranscendLog();
+          state.counts[cn] = {
+            nightmare: buildDefaultCount(),
+            dailyDungeon: buildDefaultCount(),
+            raid: buildDefaultCount(),
+            awakening: buildDefaultCount()
+          };
+          state.charMeta[cn] = { itemLevel: 0 };
+        }
+
+        save("전체 초기화");
+        render();
+      }
+
+      function exportJson(){
+        var raw = localStorage.getItem(STORAGE_KEY) || "";
+        if (!raw){
+          alert("저장된 데이터가 없습니다.");
+          return;
+        }
+        var blob = new Blob([raw], { type: "application/json;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "dailyQuest_backup.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 250);
+      }
+
+      function importJson(){
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json";
+        input.addEventListener("change", function(){
+          var file = input.files && input.files[0];
+          if (!file) return;
+
+          var reader = new FileReader();
+          reader.onload = function(){
+            try{
+              var parsed = JSON.parse(String(reader.result || ""));
+              if (!parsed || typeof parsed !== "object"){
+                alert("JSON 형식이 올바르지 않습니다.");
+                return;
+              }
+
+              if (parsed.characters && parsed.data){
+                state.characters = parsed.characters.slice(0);
+                state.activeChar = parsed.activeChar || state.characters[0];
+                state.viewMode = parsed.viewMode === "all" ? "all" : "today";
+
+                state.data = parsed.data || {};
+                state.oddEnergy = parsed.oddEnergy || {};
+                state.conquestUsed = parsed.conquestUsed || {};
+                state.conquestSpendLog = parsed.conquestSpendLog || {};
+
+                state.transcendUsed = parsed.transcendUsed || {};
+                state.transcendSpendLog = parsed.transcendSpendLog || {};
+
+                state.counts = parsed.counts || {};
+                state.charMeta = parsed.charMeta || {};
+              } else {
+                var migrated = migrateFromLegacyPayload(parsed);
+                state.characters = migrated.characters.slice(0);
+                state.activeChar = migrated.activeChar || state.characters[0];
+                state.viewMode = migrated.viewMode === "all" ? "all" : "today";
+
+                state.data = migrated.data || {};
+                state.oddEnergy = migrated.oddEnergy || {};
+                state.conquestUsed = migrated.conquestUsed || {};
+                state.conquestSpendLog = migrated.conquestSpendLog || {};
+
+                state.transcendUsed = migrated.transcendUsed || {};
+                state.transcendSpendLog = migrated.transcendSpendLog || {};
+
+                state.counts = migrated.counts || {};
+                state.charMeta = migrated.charMeta || {};
+              }
+
+              var i;
+              for (i = 0; i < state.characters.length; i += 1){
+                ensureCharStructures(state.characters[i]);
+              }
+
+              if (state.characters.indexOf(state.activeChar) < 0){
+                state.activeChar = state.characters[0];
+              }
+
+              normalizeWeekly({ characters: state.characters, data: state.data });
+
+              save("복원 가져오기");
+              render();
+              alert("복원 완료!");
+            } catch(e){
+              alert("JSON 형식이 올바르지 않습니다.");
+            }
+          };
+          reader.readAsText(file, "utf-8");
+        });
+        input.click();
+      }
+
+      function getOddTotal(charName){
+        ensureCharStructures(charName);
+        return (state.oddEnergy[charName].normal || 0) + (state.oddEnergy[charName].charged || 0);
+      }
+
+      function spendOddBlocks(charName, logArr, blocks){
+        var i;
+        for (i = 0; i < blocks; i += 1){
+          if (state.oddEnergy[charName].normal >= 40){
+            state.oddEnergy[charName].normal -= 40;
+            logArr.push("normal");
+          } else if (state.oddEnergy[charName].charged >= 40){
+            state.oddEnergy[charName].charged -= 40;
+            logArr.push("charged");
+          } else {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function getConquestPossible(charName){
+        var total = getOddTotal(charName);
+        return Math.floor(total / 40);
+      }
+
+      function getOddChargeSlot(date){
+        var d = new Date(date);
+        d.setMinutes(0, 0, 0);
+        var h = d.getHours();
+        d.setHours(Math.floor(h / 3) * 3);
+        return d;
+      }
+
+      function autoChargeBaseOdd(char){
+        ensureCharStructures(char);
+
+        var odd = state.oddEnergy[char];
+        var now = Date.now();
+
+        if (!odd.lastBaseCharge){
+            return;
+        }
+
+        var last = new Date(odd.lastBaseCharge).getTime();
+        var interval = 3 * 60 * 60 * 1000; // 3시간
+
+        var passed = now - last;
+        if (passed < interval) return;
+
+        var count = Math.floor(passed / interval);
+        if (count <= 0) return;
+
+        odd.normal = Math.min(840, odd.normal + count * 15);
+
+        odd.lastBaseCharge = new Date(last + count * interval).toISOString();
+        save("기본 오드 자동 충전");
+      }
+
+      function getNextOddChargeTime(char){
+        ensureCharStructures(char);
+        var odd = state.oddEnergy[char];
+
+        var base = odd.lastBaseCharge
+          ? new Date(odd.lastBaseCharge)
+          : new Date();
+
+        var next = new Date(base.getTime() + 3 * 60 * 60 * 1000);
+        return next;
+      }
+
+      function formatRemain(ms){
+        if (ms < 0) ms = 0;
+        var m = Math.floor(ms / 60000);
+        var h = Math.floor(m / 60);
+        return h + "시간 " + (m % 60) + "분";
+      }
+
+      function pad2(n){
+        n = parseInt(n, 10);
+        if (isNaN(n) || n < 0) n = 0;
+        return (n < 10) ? ("0" + n) : String(n);
+      }
+
+      function formatTimeHM(dateObj){
+        try{
+          var d = new Date(dateObj);
+          return pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+        } catch(e){
+          return "-";
+        }
+      }
+
+      function autoChargeNightmare(char){
+        var c = state.counts[char].nightmare;
+
+        var now = new Date();
+        var six = new Date();
+        six.setHours(6,0,0,0);
+        if (now < six) six.setDate(six.getDate() - 1);
+
+        var key = six.toISOString();
+        if (c.lastCharge === key) return;
+
+        c.base = Math.min(14, c.base + 2);
+        c.lastCharge = key;
+        save("악몽 자동충전");
+      }
+
+
+
+      function autoChargeWeekly(char, type){
+        var c = state.counts[char][type];
+
+        var now = new Date();
+        var w = new Date(now);
+        w.setDate(w.getDate() - w.getDay() + 3); // 수요일
+        w.setHours(6,0,0,0);
+        if (now < w) w.setDate(w.getDate() - 7);
+
+        var key = w.toISOString();
+        if (c.lastCharge === key) return;
+
+        c.base = Math.min(3, c.base + 3);
+        c.lastCharge = key;
+        save(type + " 자동충전");
+      }
+
+      // ✅ 일일던전: 매주 수요일 05:00, 기본입장권 7장(최대7)으로 리필, used는 주간 기준으로 리셋
+      function autoChargeDailyDungeon(char){
+        var c = state.counts[char].dailyDungeon;
+
+        var now = new Date();
+        var w = new Date(now);
+        w.setDate(w.getDate() - w.getDay() + 3); // 수요일
+        w.setHours(5,0,0,0);
+        if (now < w) w.setDate(w.getDate() - 7);
+
+        var key = w.toISOString();
+        if (c.lastCharge === key) return;
+
+        c.base = 7;
+        if (typeof c.used !== "number" || c.used < 0) c.used = 0;
+        c.used = 0;     // 주간 리셋
+        c.lastCharge = key;
+
+        save("일일던전 자동충전");
+      }
+
+      function runAutoCharges(){
+        var char = state.activeChar;
+        ensureCharStructures(char);
+        autoChargeBaseOdd(char);   // 🔥 추가
+        autoChargeNightmare(char);
+        autoChargeWeekly(char, "raid");
+        autoChargeWeekly(char, "awakening");
+        autoChargeDailyDungeon(char);
+      }
+
+      function getAvailableCount(c){
+        return Math.max(0, (c.base || 0) + (c.bonus || 0) - (c.used || 0));
+      }
+
+      function adjustCount(char, type, delta){
+        var c = state.counts[char][type];
+
+        if (delta > 0) {
+          if (getAvailableCount(c) <= 0) return;
+          c.used += 1;
+        } else {
+          if (c.used <= 0) return;
+          c.used -= 1;
+        }
+        save(type + " 수동조정");
+      }
+
+      function conquestInc40(charName, dayName){
+        ensureCharStructures(charName);
+
+        if (getOddTotal(charName) < 40) return false;
+
+        var logArr = state.conquestSpendLog[charName][dayName];
+        var ok = spendOddBlocks(charName, logArr, 1);
+        if (!ok) return false;
+
+        state.conquestUsed[charName][dayName] += 1;
+        save("정복 +1 (" + dayName + ")");
+        return true;
+      }
+
+      function conquestInc80(charName, dayName){
+        ensureCharStructures(charName);
+
+        if (getOddTotal(charName) < 80) return false;
+
+        var logArr = state.conquestSpendLog[charName][dayName];
+        var ok = spendOddBlocks(charName, logArr, 2);
+        if (!ok) return false;
+
+        state.conquestUsed[charName][dayName] += 2;
+        save("정복 +2 (" + dayName + ")");
+        return true;
+      }
+
+      function conquestDec(charName, dayName){
+        ensureCharStructures(charName);
+
+        if (state.conquestUsed[charName][dayName] <= 0){
+          return false;
+        }
+
+        state.conquestUsed[charName][dayName] -= 1;
+
+        var logArr = state.conquestSpendLog[charName][dayName];
+        var lastType = "";
+        if (Array.isArray(logArr) && logArr.length > 0){
+          lastType = logArr.pop();
+        }
+
+        if (lastType === "charged"){
+          state.oddEnergy[charName].charged += 40;
+        } else {
+          state.oddEnergy[charName].normal += 40;
+        }
+
+        save("정복 -1 (" + dayName + ")");
+        return true;
+      }
+
+      function transcendInc(charName, dayName, part){
+        ensureCharStructures(charName);
+
+        if (getOddTotal(charName) < 40) return false;
+
+        if (state.oddEnergy[charName].normal >= 40){
+          state.oddEnergy[charName].normal -= 40;
+          state.transcendSpendLog[charName][dayName][part].push("normal");
+        } else {
+          state.oddEnergy[charName].charged -= 40;
+          state.transcendSpendLog[charName][dayName][part].push("charged");
+        }
+
+        state.transcendUsed[charName][dayName][part] += 1;
+        save("초월 +1 " + part);
+        return true;
+      }
+
+      function transcendInc80(charName, dayName, part){
+        ensureCharStructures(charName);
+
+        if (getOddTotal(charName) < 80) return false;
+
+        var logArr = state.transcendSpendLog[charName][dayName][part];
+        var ok = spendOddBlocks(charName, logArr, 2);
+        if (!ok) return false;
+
+        state.transcendUsed[charName][dayName][part] += 2;
+        save("초월 +2 " + part);
+        return true;
+      }
+
+      function transcendDec(charName, dayName, part){
+        ensureCharStructures(charName);
+
+        if (state.transcendUsed[charName][dayName][part] <= 0) return false;
+
+        state.transcendUsed[charName][dayName][part] -= 1;
+        var last = state.transcendSpendLog[charName][dayName][part].pop() || "normal";
+        if (last !== "normal" && last !== "charged") last = "normal";
+        state.oddEnergy[charName][last] += 40;
+
+        save("초월 -1 " + part);
+        return true;
+      }
+
+      function getConquestTotalRuns(charName){
+        ensureCharStructures(charName);
+        var sum = 0;
+        var i;
+        for (i = 0; i < DAYS.length; i += 1){
+          sum += state.conquestUsed[charName][DAYS[i]] || 0;
+        }
+        return sum;
+      }
+
+      function renderTabs(){
+        var tabs = document.getElementById("tabs");
+        var dragTabIndex = -1;
+        tabs.innerHTML = "";
+
+        var i;
+        for (i = 0; i < state.characters.length; i += 1){
+          var name = state.characters[i];
+
+          var btn = document.createElement("div");
+          btn.className = "tab" + (state.activeChar === name ? " active" : "");
+          btn.draggable = true;
+
+          btn.textContent = name;
+          btn.setAttribute("role","button");
+          btn.setAttribute("tabindex","0");
+
+          (function(charName, el){
+            el.addEventListener("dragstart", function(){
+              dragTabIndex = state.characters.indexOf(charName);
+              el.classList.add("dragging");
+            });
+
+            el.addEventListener("dragend", function(){
+              el.classList.remove("dragging");
+              dragTabIndex = -1;
+            });
+
+            el.addEventListener("dragover", function(ev){
+              ev.preventDefault(); // drop 허용
+            });
+
+            el.addEventListener("drop", function(){
+              var dropIndex = state.characters.indexOf(charName);
+              if (dragTabIndex < 0 || dropIndex < 0 || dragTabIndex === dropIndex) return;
+
+              var moved = state.characters.splice(dragTabIndex, 1)[0];
+              state.characters.splice(dropIndex, 0, moved);
+
+              save("캐릭터 순서 변경");
+              render();
+            });
+
+            el.addEventListener("click", function(){
+              setActiveChar(charName);
+            });
+          })(name, btn);
+
+          tabs.appendChild(btn);
+        }
+
+        var spacer = document.createElement("div");
+        spacer.className = "spacer";
+        tabs.appendChild(spacer);
+      }
+
+      function renderHeader(){
+        document.getElementById("currentCharLabel").textContent = state.activeChar;
+        document.getElementById("todayLabel").innerHTML = "<strong>" + state.today + "</strong>요일";
+
+        var toggleBtn = document.getElementById("toggleViewBtn");
+        toggleBtn.textContent = (state.viewMode === "today") ? "전체 보기" : "오늘만 보기";
+
+        ensureCharStructures(state.activeChar);
+      }
+
+      function openEditModal(){
+        ensureCharStructures(state.activeChar);
+        state.__oddCalibPromptedOnce = false;
+
+        var modal = document.getElementById("editModal");
+        modal.style.display = "flex";
+        modal.setAttribute("aria-hidden", "false");
+
+        var char = state.activeChar;
+
+        document.getElementById("editName").value = char;
+
+        document.getElementById("editItemLevel").value =
+          (state.charMeta[char] && typeof state.charMeta[char].itemLevel === "number")
+            ? state.charMeta[char].itemLevel
+            : 0;
+
+        document.getElementById("editOddNormal").value = state.oddEnergy[char].normal || 0;
+        document.getElementById("editOddCharged").value = state.oddEnergy[char].charged || 0;
+
+        var nm = state.counts[char].nightmare;
+        var dd = state.counts[char].dailyDungeon;
+        var aw = state.counts[char].awakening;
+        var rd = state.counts[char].raid;
+
+        document.getElementById("editNightmareBase").value = nm.base || 0;
+        document.getElementById("editNightmareBonus").value = nm.bonus || 0;
+
+        document.getElementById("editDailyDungeonBase").value = dd.base || 0;
+        document.getElementById("editDailyDungeonBonus").value = dd.bonus || 0;
+
+        document.getElementById("editAwakeningBase").value = aw.base || 0;
+        document.getElementById("editAwakeningBonus").value = aw.bonus || 0;
+
+        document.getElementById("editRaidBase").value = rd.base || 0;
+        document.getElementById("editRaidBonus").value = rd.bonus || 0;
+
+        setTotalsInEditModal(char);
+        bindEditTotalLiveOnce();
+      }
+
+      function setTotalsInEditModal(char){
+        var oddN = state.oddEnergy[char].normal || 0;
+        var oddC = state.oddEnergy[char].charged || 0;
+
+        var nm = state.counts[char].nightmare;
+        var dd = state.counts[char].dailyDungeon;
+        var aw = state.counts[char].awakening;
+        var rd = state.counts[char].raid;
+
+        var elOddTotal = document.getElementById("editOddTotal");
+        if (elOddTotal) elOddTotal.value = (oddN + oddC);
+
+        var elNmTotal = document.getElementById("editNightmareTotal");
+        if (elNmTotal) elNmTotal.value = (nm.base + nm.bonus);
+
+        var elDdTotal = document.getElementById("editDailyDungeonTotal");
+        if (elDdTotal) elDdTotal.value = (dd.base + dd.bonus);
+
+        var elAwTotal = document.getElementById("editAwakeningTotal");
+        if (elAwTotal) elAwTotal.value = (aw.base + aw.bonus);
+
+        var elRdTotal = document.getElementById("editRaidTotal");
+        if (elRdTotal) elRdTotal.value = (rd.base + rd.bonus);
+      }
+
+      function closeEditModal(){
+        var modal = document.getElementById("editModal");
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      function readInt(id){
+        var el = document.getElementById(id);
+        if (!el) return 0;
+        var v = parseInt(el.value, 10);
+        if (isNaN(v) || v < 0) v = 0;
+        return v;
+      }
+
+      function saveEditModal(){
+        var oldName = state.activeChar;
+        var newName = normalizeCharName(document.getElementById("editName").value);
+
+        if (newName === ""){
+          alert("캐릭터 이름이 비었습니다.");
+          return;
+        }
+
+        if (newName !== oldName && state.characters.indexOf(newName) >= 0){
+          alert("이미 존재하는 이름입니다.");
+          return;
+        }
+
+        var itemLevel = readInt("editItemLevel");
+        var oddN = readInt("editOddNormal");
+        var oddC = readInt("editOddCharged");
+
+        var nmBase = readInt("editNightmareBase");
+        var nmBonus = readInt("editNightmareBonus");
+
+        var ddBase = readInt("editDailyDungeonBase");
+        var ddBonus = readInt("editDailyDungeonBonus");
+
+        var awBase = readInt("editAwakeningBase");
+        var awBonus = readInt("editAwakeningBonus");
+
+        var rdBase = readInt("editRaidBase");
+        var rdBonus = readInt("editRaidBonus");
+
+        // (1) 이름 변경 처리
+        if (newName !== oldName){
+          var idx = state.characters.indexOf(oldName);
+          if (idx >= 0) state.characters[idx] = newName;
+
+          state.data[newName] = state.data[oldName]; delete state.data[oldName];
+          state.oddEnergy[newName] = state.oddEnergy[oldName]; delete state.oddEnergy[oldName];
+          state.conquestUsed[newName] = state.conquestUsed[oldName]; delete state.conquestUsed[oldName];
+          state.conquestSpendLog[newName] = state.conquestSpendLog[oldName]; delete state.conquestSpendLog[oldName];
+
+          state.transcendUsed[newName] = state.transcendUsed[oldName]; delete state.transcendUsed[oldName];
+          state.transcendSpendLog[newName] = state.transcendSpendLog[oldName]; delete state.transcendSpendLog[oldName];
+
+          state.counts[newName] = state.counts[oldName]; delete state.counts[oldName];
+
+          state.charMeta[newName] = state.charMeta[oldName] ? state.charMeta[oldName] : { itemLevel: 0 };
+          if (state.charMeta[oldName]) delete state.charMeta[oldName];
+
+          state.activeChar = newName;
+        }
+
+        // (2) 값 반영
+        ensureCharStructures(state.activeChar);
+
+        state.charMeta[state.activeChar].itemLevel = itemLevel;
+
+        state.oddEnergy[state.activeChar].normal = oddN;
+        state.oddEnergy[state.activeChar].charged = oddC;
+
+        var nm = state.counts[state.activeChar].nightmare;
+        var dd = state.counts[state.activeChar].dailyDungeon;
+        var aw = state.counts[state.activeChar].awakening;
+        var rd = state.counts[state.activeChar].raid;
+
+        nm.base = nmBase;
+        nm.bonus = nmBonus;
+
+        dd.base = ddBase;
+        dd.bonus = ddBonus;
+
+        aw.base = awBase;
+        aw.bonus = awBonus;
+
+        rd.base = rdBase;
+        rd.bonus = rdBonus;
+
+        // used는 기존값 유지하되, 총보유(base+bonus) 넘어가면 clamp
+        function clampUsed(counterObj){
+          var total = (counterObj.base || 0) + (counterObj.bonus || 0);
+          if (typeof counterObj.used !== "number" || counterObj.used < 0) counterObj.used = 0;
+          if (counterObj.used > total) counterObj.used = total;
+        }
+
+        clampUsed(nm);
+        clampUsed(dd);
+        clampUsed(aw);
+        clampUsed(rd);
+
+
+        // (3) 저장 + 닫기 + 렌더
+        save("캐릭터 정보 수정(모달)");
+        closeEditModal();
+        render();
+      }
+
+      function renderSidePanel(){
+        var char = state.activeChar;
+
+        document.getElementById("sideCharName").textContent = char;
+
+        document.getElementById("sideItemLevel").textContent =
+          (state.charMeta[char] && typeof state.charMeta[char].itemLevel === "number")
+            ? state.charMeta[char].itemLevel
+            : 0;
+
+        var oddTotal = getOddTotal(char);
+        document.getElementById("sideOddTotal").textContent = oddTotal;
+
+        var possible = Math.floor(oddTotal / 40);
+
+        document.getElementById("sideConquest").textContent = possible + " 회";
+        document.getElementById("sideTranscend").textContent = possible + " 회";
+
+        var nm = state.counts[char].nightmare;
+        var dd = state.counts[char].dailyDungeon;
+        var aw = state.counts[char].awakening;
+        var rd = state.counts[char].raid;
+
+        document.getElementById("sideNightmareAvail").textContent = getAvailableCount(nm) + " 회";
+        document.getElementById("sideDailyDungeonAvail").textContent = getAvailableCount(dd) + " 회";
+        document.getElementById("sideAwakeningAvail").textContent = getAvailableCount(aw) + " 회";
+        document.getElementById("sideRaidAvail").textContent = getAvailableCount(rd) + " 회";
+        var next = getNextOddChargeTime(char);
+        var remain = next - new Date();
+
+        document.getElementById("sideOddNext").textContent =
+          formatRemain(remain) + " 후 (+15)";
+
+        var atEl = document.getElementById("sideOddNextAt");
+        if (atEl){
+          atEl.textContent = formatTimeHM(next);
+        }
+
+      }
+
+      function renderGrid(){
+        var table = document.getElementById("gridTable");
+        var visibleDays = getVisibleDays();
+        table.innerHTML = "";
+
+        var thead = document.createElement("thead");
+        var tr = document.createElement("tr");
+
+        var th = document.createElement("th");
+        th.className = "taskCol";
+        th.textContent = "숙제";
+        tr.appendChild(th);
+
+        var d;
+        for (d = 0; d < visibleDays.length; d += 1){
+          var day = visibleDays[d];
+
+          th = document.createElement("th");
+          if (day === "토" || day === "일") th.classList.add("weekend");
+
+          var headWrap = document.createElement("div");
+          headWrap.className = "dayHead";
+
+          var dayLabel = document.createElement("div");
+          dayLabel.textContent = day;
+
+          var btnWrap = document.createElement("div");
+          btnWrap.className = "dayBtns";
+
+          var allBtn = document.createElement("button");
+          allBtn.type = "button";
+          allBtn.textContent = "전체체크";
+
+          var clearBtn = document.createElement("button");
+          clearBtn.type = "button";
+          clearBtn.textContent = "전체해제";
+
+          (function(dayName){
+            allBtn.addEventListener("click", function(){
+              setAllForDay(state.activeChar, dayName, true);
+              save("요일 전체 체크 (" + dayName + ")");
+              render();
+            });
+            clearBtn.addEventListener("click", function(){
+              setAllForDay(state.activeChar, dayName, false);
+              save("요일 전체 해제 (" + dayName + ")");
+              render();
+            });
+          })(day);
+
+          btnWrap.appendChild(allBtn);
+          btnWrap.appendChild(clearBtn);
+
+          headWrap.appendChild(dayLabel);
+          headWrap.appendChild(btnWrap);
+
+          th.appendChild(headWrap);
+          tr.appendChild(th);
+        }
+
+        thead.appendChild(tr);
+        table.appendChild(thead);
+
+        var tbody = document.createElement("tbody");
+
+        var t;
+        for (t = 0; t < TASKS.length; t += 1){
+          var taskName = TASKS[t];
+          tr = document.createElement("tr");
+
+          var nameTd = document.createElement("td");
+          nameTd.className = "taskName";
+          nameTd.textContent = taskName;
+
+          if (isWeeklyTask(taskName)){
+            var badge = document.createElement("span");
+            badge.className = "badgeWeekly";
+            badge.textContent = "주 1회";
+            nameTd.appendChild(badge);
+          }
+
+          tr.appendChild(nameTd);
+
+          for (d = 0; d < visibleDays.length; d += 1){
+            day = visibleDays[d];
+            var td = document.createElement("td");
+
+            // ===== 정복 =====
+            if (taskName === "정복"){
+              ensureCharStructures(state.activeChar);
+
+              var box = document.createElement("div");
+              box.className = "conqBox";
+
+              var ctr = document.createElement("div");
+              ctr.className = "conqCtr";
+
+              var btnMinus = document.createElement("button");
+              btnMinus.type = "button";
+              btnMinus.textContent = "-";
+
+              var countSpan = document.createElement("span");
+              countSpan.textContent = (state.conquestUsed[state.activeChar][day] || 0) + "회";
+
+              var btnPlus = document.createElement("button");
+              btnPlus.type = "button";
+              btnPlus.textContent = "+";
+
+              var btnPlus2 = document.createElement("button");
+              btnPlus2.type = "button";
+              btnPlus2.className = "btn2x";
+              btnPlus2.textContent = "2×";
+              btnPlus2.title = "2회 추가 (오드 80)";
+
+              btnMinus.disabled = (state.conquestUsed[state.activeChar][day] || 0) <= 0;
+              btnPlus.disabled = getOddTotal(state.activeChar) < 40;
+              btnPlus2.disabled = getOddTotal(state.activeChar) < 80;
+
+              (function(dayName){
+                btnPlus.addEventListener("click", function(){
+                  var ok = conquestInc40(state.activeChar, dayName);
+                  if (!ok) return;
+                  render();
+                });
+
+                btnPlus2.addEventListener("click", function(){
+                  var ok = conquestInc80(state.activeChar, dayName);
+                  if (!ok) return;
+                  render();
+                });
+
+                btnMinus.addEventListener("click", function(){
+                  var ok = conquestDec(state.activeChar, dayName);
+                  if (!ok) return;
+                  render();
+                });
+              })(day);
+
+              ctr.appendChild(btnMinus);
+              ctr.appendChild(countSpan);
+              ctr.appendChild(btnPlus);
+              ctr.appendChild(btnPlus2);
+
+              box.appendChild(ctr);
+              td.appendChild(box);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 악몽 =====
+            if (taskName === "악몽") {
+              ensureCharStructures(state.activeChar);
+
+              var boxN = document.createElement("div");
+              boxN.className = "conqBox";
+
+              var ctrN = document.createElement("div");
+              ctrN.className = "conqCtr";
+
+              var btnMinusN = document.createElement("button");
+              btnMinusN.type = "button";
+              btnMinusN.textContent = "-";
+
+              var cN = state.counts[state.activeChar].nightmare;
+
+              var countSpanN = document.createElement("span");
+              countSpanN.textContent = cN.used + "회";
+
+              var btnPlusN = document.createElement("button");
+              btnPlusN.type = "button";
+              btnPlusN.textContent = "+";
+
+              var availableN = getAvailableCount(cN);
+
+              btnMinusN.disabled = cN.used <= 0;
+              btnPlusN.disabled = availableN <= 0;
+
+              btnPlusN.addEventListener("click", function(){
+                adjustCount(state.activeChar, "nightmare", +1);
+                render();
+              });
+
+              btnMinusN.addEventListener("click", function(){
+                adjustCount(state.activeChar, "nightmare", -1);
+                render();
+              });
+
+              ctrN.appendChild(btnMinusN);
+              ctrN.appendChild(countSpanN);
+              ctrN.appendChild(btnPlusN);
+
+              var infoN = document.createElement("div");
+              infoN.className = "conqInfo";
+              infoN.innerHTML =
+                "이용 가능: " + availableN + "회<br/>" +
+                "기본 " + cN.base + " / 추가 " + cN.bonus;
+
+              boxN.appendChild(ctrN);
+              boxN.appendChild(infoN);
+
+              td.appendChild(boxN);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 일일던전 =====
+            if (taskName === "일일던전") {
+              ensureCharStructures(state.activeChar);
+
+              var boxD = document.createElement("div");
+              boxD.className = "conqBox";
+
+              var ctrD = document.createElement("div");
+              ctrD.className = "conqCtr";
+
+              var btnMinusD = document.createElement("button");
+              btnMinusD.type = "button";
+              btnMinusD.textContent = "-";
+
+              var cD = state.counts[state.activeChar].dailyDungeon;
+
+              var countSpanD = document.createElement("span");
+              countSpanD.textContent = cD.used + "회";
+
+              var btnPlusD = document.createElement("button");
+              btnPlusD.type = "button";
+              btnPlusD.textContent = "+";
+
+              var availableD = getAvailableCount(cD);
+
+              btnMinusD.disabled = cD.used <= 0;
+              btnPlusD.disabled = availableD <= 0;
+
+              btnPlusD.addEventListener("click", function(){
+                adjustCount(state.activeChar, "dailyDungeon", +1);
+                render();
+              });
+
+              btnMinusD.addEventListener("click", function(){
+                adjustCount(state.activeChar, "dailyDungeon", -1);
+                render();
+              });
+
+              ctrD.appendChild(btnMinusD);
+              ctrD.appendChild(countSpanD);
+              ctrD.appendChild(btnPlusD);
+
+              var infoD = document.createElement("div");
+              infoD.className = "conqInfo";
+              infoD.innerHTML =
+                "이용 가능: " + availableD + "회<br/>" +
+                "기본 " + cD.base + " / 추가 " + cD.bonus;
+
+              boxD.appendChild(ctrD);
+              boxD.appendChild(infoD);
+
+              td.appendChild(boxD);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 토벌전/각성전 =====
+            if (taskName === "토벌전" || taskName === "각성전") {
+              ensureCharStructures(state.activeChar);
+
+              var type = (taskName === "토벌전") ? "raid" : "awakening";
+              var cW = state.counts[state.activeChar][type];
+
+              var boxW = document.createElement("div");
+              boxW.className = "conqBox";
+
+              var ctrW = document.createElement("div");
+              ctrW.className = "conqCtr";
+
+              var btnMinusW = document.createElement("button");
+              btnMinusW.textContent = "-";
+
+              var spanW = document.createElement("span");
+              spanW.textContent = cW.used + "회";
+
+              var btnPlusW = document.createElement("button");
+              btnPlusW.textContent = "+";
+
+              var availableW = getAvailableCount(cW);
+
+              btnMinusW.disabled = cW.used <= 0;
+              btnPlusW.disabled = availableW <= 0;
+
+              (function(tt){
+                btnPlusW.onclick = function(){
+                  adjustCount(state.activeChar, tt, +1);
+                  render();
+                };
+                btnMinusW.onclick = function(){
+                  adjustCount(state.activeChar, tt, -1);
+                  render();
+                };
+              })(type);
+
+              ctrW.appendChild(btnMinusW);
+              ctrW.appendChild(spanW);
+              ctrW.appendChild(btnPlusW);
+
+              var infoW = document.createElement("div");
+              infoW.className = "conqInfo";
+              infoW.innerHTML =
+                "이용 가능: " + availableW + "회<br/>" +
+                "기본 " + cW.base + " / 추가 " + cW.bonus;
+
+              boxW.appendChild(ctrW);
+              boxW.appendChild(infoW);
+
+              td.appendChild(boxW);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 회랑 =====
+            if (taskName === HOERANG){
+              var hbox = document.createElement("div");
+              hbox.className = "hoerangBox";
+
+              (function(dayName){
+                var pi;
+                for (pi = 0; pi < HOERANG_PARTS.length; pi += 1){
+                  (function(partName){
+                    var label = document.createElement("label");
+                    label.className = "mini";
+                    label.title = partName;
+
+                    var cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.checked = getValue(state.activeChar, HOERANG, dayName, partName);
+
+                    cb.addEventListener("change", function(){
+                      setValue(state.activeChar, HOERANG, dayName, cb.checked, partName);
+                      save("체크 변경 (회랑-" + partName + ")");
+                      render();
+                    });
+
+                    var text = document.createElement("span");
+                    text.textContent = partName;
+
+                    label.appendChild(cb);
+                    label.appendChild(text);
+                    hbox.appendChild(label);
+                  })(HOERANG_PARTS[pi]);
+                }
+              })(day);
+
+              td.appendChild(hbox);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 초월 =====
+            if (taskName === CHO_WOL){
+              ensureCharStructures(state.activeChar);
+
+              var boxT = document.createElement("div");
+              boxT.className = "conqBox";
+
+              (function(dayName){
+                ["데우스","아르카니스"].forEach(function(part){
+                  var row = document.createElement("div");
+                  row.className = "conqCtr";
+
+                  var label = document.createElement("span");
+                  label.textContent = part;
+
+                  var btnMinus = document.createElement("button");
+                  btnMinus.type = "button";
+                  btnMinus.textContent = "-";
+
+                  var span = document.createElement("span");
+                  span.textContent = state.transcendUsed[state.activeChar][dayName][part] + "회";
+
+                  var btnPlus = document.createElement("button");
+                  btnPlus.type = "button";
+                  btnPlus.textContent = "+";
+
+                  var btnPlus2 = document.createElement("button");
+                  btnPlus2.type = "button";
+                  btnPlus2.className = "btn2x";
+                  btnPlus2.textContent = "2×";
+                  btnPlus2.title = "2회 추가 (오드 80)";
+
+                  var oddTotalNow = getOddTotal(state.activeChar);
+                  btnPlus.disabled = oddTotalNow < 40;
+                  btnPlus2.disabled = oddTotalNow < 80;
+
+                  btnMinus.onclick = function(){
+                    transcendDec(state.activeChar, dayName, part);
+                    render();
+                  };
+
+                  btnPlus.onclick = function(){
+                    transcendInc(state.activeChar, dayName, part);
+                    render();
+                  };
+
+                  btnPlus2.onclick = function(){
+                    transcendInc80(state.activeChar, dayName, part);
+                    render();
+                  };
+
+                  row.appendChild(label);
+                  row.appendChild(btnMinus);
+                  row.appendChild(span);
+                  row.appendChild(btnPlus);
+                  row.appendChild(btnPlus2);
+
+                  boxT.appendChild(row);
+                });
+              })(day);
+
+              td.appendChild(boxT);
+              tr.appendChild(td);
+              continue;
+            }
+
+            // ===== 기본 체크박스 =====
+            var cb2 = document.createElement("input");
+            cb2.type = "checkbox";
+            cb2.checked = getValue(state.activeChar, taskName, day);
+
+            (function(task, dayName, checkbox){
+              checkbox.addEventListener("change", function(){
+                setValue(state.activeChar, task, dayName, checkbox.checked);
+                save("체크 변경");
+                render();
+              });
+            })(taskName, day, cb2);
+
+            td.appendChild(cb2);
+            tr.appendChild(td);
+          }
+
+          tbody.appendChild(tr);
+        }
+
+        table.appendChild(tbody);
+      }
+
+      function wireButtons(){
+        function on(id, evt, fn){
+          var el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener(evt, fn);
+        }
+
+        on("toggleViewBtn", "click", function(){ toggleViewMode(); });
+        on("addCharBtn", "click", function(){ addCharacter(); });
+        on("renameCharBtn", "click", function(){ renameCurrentCharacter(); });
+        on("removeCharBtn", "click", function(){ removeCurrentCharacter(); });
+        
+        on("prevCharBtn", "click", function(){ switchCharByDelta(-1); });
+        on("nextCharBtn", "click", function(){ switchCharByDelta(+1); });
+
+        on("resetCharBtn", "click", function(){
+          var ok = confirm("[" + state.activeChar + "] 데이터를 전부 초기화할까요?");
+          if (!ok) return;
+          resetChar(state.activeChar);
+        });
+
+        on("resetAllBtn", "click", function(){
+          var ok = confirm("모든 캐릭터 데이터를 전부 초기화할까요? (되돌릴 수 없음)");
+          if (!ok) return;
+          resetAll();
+        });
+
+        on("exportBtn", "click", function(){ exportJson(); });
+
+        on("importBtn", "click", function(){
+          var ok = confirm("백업 JSON으로 덮어쓸까요? 현재 데이터는 교체됩니다.");
+          if (!ok) return;
+          importJson();
+        });
+
+        on("editCharBtn", "click", function(){ openEditModal(); });
+        on("editModalCancel", "click", function(){ closeEditModal(); });
+        on("editModalCloseX", "click", function(){ closeEditModal(); });
+        on("editModalSave", "click", function(){ saveEditModal(); });
+
+        on("oddCalibResetBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var ok = confirm("[" + char + "] 오드 충전 보정을 초기화할까요?\n(다시 시간입력이 필요합니다)");
+          if (!ok) return;
+
+          state.oddEnergy[char].lastBaseCharge = "";
+          save("오드 보정 초기화");
+          render();
+        });
+
+        on("shugoAlarmBtn", "click", function(){ requestShugoPermission(); });
+                
+        // ===== 사이드패널 "값 수정" 버튼들 =====
+        on("sideOddAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var cur = state.oddEnergy[char].charged || 0;
+          var n = askSetNumber("추가 오드에너지 수정", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusOdd(char, n);
+        });
+
+        // 정복/초월도 bonus odd(=charged) 수정으로 통일
+        on("sideConqAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var cur = state.oddEnergy[char].charged || 0;
+          var n = askSetNumber("추가 오드에너지 수정(정복)", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusOdd(char, n);
+        });
+
+        on("sideTransAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var cur = state.oddEnergy[char].charged || 0;
+          var n = askSetNumber("추가 오드에너지 수정(초월)", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusOdd(char, n);
+        });
+
+        on("sideNmAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var c = state.counts[char].nightmare;
+          var cur = c.bonus || 0;
+
+          var n = askSetNumber("악몽 추가 입장권 수정", cur, "추가 입장권(bonus) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusTicket(char, "nightmare", n, "악몽");
+        });
+
+        on("sideDdAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var c = state.counts[char].dailyDungeon;
+          var cur = c.bonus || 0;
+
+          var n = askSetNumber("일일던전 추가 입장권 수정", cur, "추가 입장권(bonus) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusTicket(char, "dailyDungeon", n, "일일던전");
+        });
+
+        on("sideAwAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var c = state.counts[char].awakening;
+          var cur = c.bonus || 0;
+
+          var n = askSetNumber("각성전 추가 입장권 수정", cur, "추가 입장권(bonus) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusTicket(char, "awakening", n, "각성전");
+        });
+
+        on("sideRdAddBtn", "click", function(){
+          var char = state.activeChar;
+          ensureCharStructures(char);
+
+          var c = state.counts[char].raid;
+          var cur = c.bonus || 0;
+
+          var n = askSetNumber("토벌전 추가 입장권 수정", cur, "추가 입장권(bonus) 값을 '설정'합니다.");
+          if (n === null) return;
+
+          setBonusTicket(char, "raid", n, "토벌전");
+        });
+
+
+        (function(){
+          var overlay = document.getElementById("editModal");
+          if (!overlay) return;
+
+          var downOnOverlay = false;
+
+          overlay.addEventListener("pointerdown", function(ev){
+            // 오버레이(배경)에서 시작했을 때만 true
+            downOnOverlay = (ev.target === overlay);
+          });
+
+          overlay.addEventListener("pointerup", function(ev){
+            // 시작도 오버레이, 끝도 오버레이일 때만 닫기
+            if (downOnOverlay && ev.target === overlay){
+              closeEditModal();
+            }
+            downOnOverlay = false;
+          });
+
+          // 안전장치: pointercancel에서도 초기화
+          overlay.addEventListener("pointercancel", function(){
+            downOnOverlay = false;
+          });
+        })();
+      }
+
+      function calibrateBaseOddIfNeeded(char){
+        ensureCharStructures(char);
+
+        var odd = state.oddEnergy[char];
+
+        // 이미 기준 있으면 안 뜸
+        if (odd.lastBaseCharge){
+          return;
+        }
+
+        // ✅ 모달 열린 동안 1번만 띄우기 (취소/포커스 반복 방지)
+        if (state.__oddCalibPromptedOnce){
+          return;
+        }
+        state.__oddCalibPromptedOnce = true;
+
+        var remainMin = prompt(
+          "기본 오드에너지 다음 충전까지 남은 시간을 분 단위로 입력하세요.\n" +
+          "(예: 1시간 50분 → 110 입력)\n\n" +
+          "※ 최초 1회만 필요합니다."
+        );
+
+        if (remainMin === null){
+          return;
+        }
+
+        remainMin = parseInt(remainMin, 10);
+        if (isNaN(remainMin) || remainMin <= 0){
+          alert("올바른 숫자를 입력하세요.");
+          return;
+        }
+
+        var now = Date.now();
+        var interval = 3 * 60 * 60 * 1000;
+        var last = now + (remainMin * 60 * 1000) - interval;
+
+        odd.lastBaseCharge = new Date(last).toISOString();
+        save("기본 오드 기준 보정");
+      }
+
+
+      function bindEditTotalLive(){
+        function val(id){
+          var el = document.getElementById(id);
+          if (!el) return 0;
+          var v = parseInt(el.value, 10);
+          if (isNaN(v) || v < 0) v = 0;
+          return v;
+        }
+
+        function refresh(){
+          var oddTotalEl = document.getElementById("editOddTotal");
+          if (oddTotalEl) oddTotalEl.value = val("editOddNormal") + val("editOddCharged");
+
+          var nmTotalEl = document.getElementById("editNightmareTotal");
+          if (nmTotalEl) nmTotalEl.value = val("editNightmareBase") + val("editNightmareBonus");
+
+          var ddTotalEl = document.getElementById("editDailyDungeonTotal");
+          if (ddTotalEl) ddTotalEl.value = val("editDailyDungeonBase") + val("editDailyDungeonBonus");
+
+          var awTotalEl = document.getElementById("editAwakeningTotal");
+          if (awTotalEl) awTotalEl.value = val("editAwakeningBase") + val("editAwakeningBonus");
+
+          var rdTotalEl = document.getElementById("editRaidTotal");
+          if (rdTotalEl) rdTotalEl.value = val("editRaidBase") + val("editRaidBonus");
+        }
+        [
+          "editOddNormal","editOddCharged",
+          "editNightmareBase","editNightmareBonus",
+          "editDailyDungeonBase","editDailyDungeonBonus",
+          "editAwakeningBase","editAwakeningBonus",
+          "editRaidBase","editRaidBonus"
+        ].forEach(function(id){
+          var el = document.getElementById(id);
+          if (!el) return;
+
+          // ✅ 오드 입력칸: 포커스만 와도 보정 prompt + 총합 갱신
+          if (id === "editOddNormal" || id === "editOddCharged"){
+            el.onfocus = function(){
+              calibrateBaseOddIfNeeded(state.activeChar);
+              refresh();
+            };
+            el.oninput = refresh; // 입력 중 총합 갱신
+            return;
+          }
+
+          el.oninput = refresh;
+        });
+      }
+
+      function bindEditTotalLiveOnce(){
+        if (bindEditTotalLiveOnce._done) return;
+        bindEditTotalLiveOnce._done = true;
+        bindEditTotalLive();
+      }
+
+      function render(){
+        runAutoCharges();
+        renderTabs();
+        renderHeader();
+        renderGrid();
+        renderSidePanel();
+      }
+
+      function init(){
+        load();
+        loadShugoState();
+        wireButtons();
+        loadShugoPrefs();
+        updateShugoAlarmBtn();
+
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw){
+          try{
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.meta && parsed.meta.savedAt){
+              updateSavedLabel(parsed.meta.savedAt);
+            }
+          } catch(e){}
+        }
+
+        render();
+        updateShugoPanel();
+        setInterval(updateShugoPanel, 1000);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
