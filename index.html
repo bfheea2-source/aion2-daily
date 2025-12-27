@@ -652,8 +652,10 @@
     .btnPrimary:hover{
       opacity:0.9;
     }
+    .note{font-size:12px;color:var(--muted);}
+  </style>
 
-    <script type="module">
+      <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -681,9 +683,7 @@
         doc, getDoc, setDoc, serverTimestamp
       };
     </script>
-
-    .note{font-size:12px;color:var(--muted);}
-  </style>
+  
 </head>
 <body>
   <div class="wrap">
@@ -1792,7 +1792,9 @@
         
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         updateSavedLabel(payload.meta.savedAt);
-        fbSave(payload);   // 🔥 Firebase 동기화
+        if (fbUser){
+          fbSave(payload);   // 🔥 Firebase 동기화
+        }
       }
 
       function loadShugoPrefs(){
@@ -3484,36 +3486,51 @@
       }
       
       var fbUser = null;
-      var FB_DOC_PATH = null;
       
       function fbSave(payload){
-        if (!fbUser || !window.__fb) return;
+        if (!fbUser || !window.__fb) return Promise.resolve();
         var fb = window.__fb;
       
         return fb.setDoc(
           fb.doc(fb.db, "users", fbUser.uid),
-          {
-            payload: payload,
-            updatedAt: fb.serverTimestamp()
-          },
+          { payload: payload, updatedAt: fb.serverTimestamp() },
           { merge: true }
-        );
+        ).catch(function(){
+          return;
+        });
       }
       
       function fbLoad(){
         if (!fbUser || !window.__fb) return Promise.resolve(null);
         var fb = window.__fb;
       
-        return fb.getDoc(
-          fb.doc(fb.db, "users", fbUser.uid)
-        ).then(function(snap){
-          if (!snap.exists()) return null;
-          return snap.data().payload || null;
-        });
+        return fb.getDoc(fb.doc(fb.db, "users", fbUser.uid))
+          .then(function(snap){
+            if (!snap.exists()) return null;
+            var data = snap.data() || {};
+            return data.payload || null;
+          })
+          .catch(function(){
+            return null;
+          });
       }
 
       function init(){
+        
+        if (!window.__fb){
+          // Firebase 스크립트가 아직 준비 안 된 경우: 로컬만으로라도 동작
+          loadShugoState();
+          wireButtons();
+          loadShugoPrefs();
+          updateShugoAlarmBtn();
       
+          updateShugoPanel();
+          setInterval(updateShugoPanel, 1000);
+      
+          load();
+          render();
+          return;
+        }
         // 1) 이벤트/설정/버튼 바인딩은 1회만
         loadShugoState();
         wireButtons();
