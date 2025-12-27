@@ -559,6 +559,80 @@
       border-radius:10px;
       padding:6px 8px;
     }
+    
+    /* ===== 가시성(한눈에) 강화 패치 ===== */
+    
+    /* 전체 글자 살짝 키우기 */
+    #gridTable td, #gridTable thead th{
+      font-size:13px !important;
+    }
+    
+    /* 좌측 숙제명 더 굵게/선명하게 */
+    #gridTable td.taskName{
+      color:#111 !important;
+    }
+    .taskTitle{
+      font-size:14px;
+    }
+    .taskIcon{
+      border-color:#c8d6ff !important;
+      background:#e9f0ff !important;
+    }
+    
+    /* 표 줄/구분선 조금 더 보이게 */
+    #gridTable thead th{
+      border-bottom:1px solid #cfd6e3 !important;
+    }
+    #gridTable td{
+      border-bottom:1px solid #e0e6f0 !important;
+    }
+    
+    /* 헤더(요일) 더 크게 */
+    .dayHead > div:first-child{
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:-0.2px;
+    }
+    
+    /* ===== 체크 상태가 '색으로' 바로 보이게 ===== */
+    /* Chrome 최신이면 :has 지원됨 (지금 너 환경 OK) */
+    
+    /* 기본(미완료) 칩 */
+    .cellChip{
+      border-color:#cfd6e3 !important;
+      background:#f4f6fa !important;
+      color:#222 !important;
+    }
+    
+    /* 완료(체크됨) → 초록 강조 */
+    .cellChip:has(input:checked){
+      border-color:#1b7f3a !important;
+      background:#eaffef !important;
+      color:#0f3d1f !important;
+      font-weight:900 !important;
+    }
+    
+    /* 체크박스 자체도 조금 키우기 */
+    .cellChip input[type="checkbox"]{
+      width:18px !important;
+      height:18px !important;
+    }
+    
+    /* “완료” 글자는 작게(보조로만) */
+    .cellChip span{
+      font-size:12px !important;
+      opacity:0.85;
+    }
+    
+    /* 행 전체도 완료가 있으면 살짝 tint (한눈에 스캔) */
+    #gridTable tbody tr:has(.cellChip input:checked) td{
+      background:#f7fffa !important;
+    }
+    
+    /* 주말 헤더 더 튀게 */
+    thead th.weekend{
+      background:linear-gradient(180deg,#ffe4d1,#ffd1b1) !important;
+    }
 
     
     .sidePanel{
@@ -574,6 +648,24 @@
       word-break:keep-all;
     }
 
+    .cellChip{
+      padding:8px 0 !important;
+      width:84px;
+    }
+
+
+    .conqCtr span{
+      font-size:14px !important;
+      font-weight:900 !important;
+      min-width:42px;
+      display:inline-block;
+    }
+    
+    .conqInfo{
+      font-size:12px !important;
+      color:#111 !important;
+    }
+    
     button.cloud {
       background:#eef4ff;
       border-color:#8fb3ff;
@@ -3360,11 +3452,8 @@
             
             chip.appendChild(cb2);
             
-            var txt = document.createElement("span");
-            txt.textContent = "완료";
-            chip.appendChild(txt);
-            
             td.appendChild(chip);
+
             tr.appendChild(td);
 
           }
