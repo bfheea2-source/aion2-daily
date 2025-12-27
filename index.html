@@ -800,17 +800,10 @@
 
           <div class="rightTools">
             <button id="addCharBtn" type="button">캐릭터 추가</button>
-            <button id="renameCharBtn" type="button">이름 수정(리네임)</button>
-            <button id="removeCharBtn" type="button" class="danger">현재 캐릭터 삭제</button>
-
-            <button id="resetCharBtn" type="button">이 캐릭터 전체 초기화</button>
-            <button id="resetAllBtn" type="button">모든 캐릭터 전체 초기화</button>
-
-            <button id="exportBtn" type="button">백업 내보내기(JSON)</button>
-            <button id="importBtn" type="button">복원 가져오기(JSON)</button>
-
-            <span class="toolSep"></span>
-          </div>
+            <button id="renameCharBtn" type="button"><span id="toolbarCharName">-</span> 이름변경</button>
+            <button id="removeCharBtn" type="button" class="danger"><span id="toolbarCharName2">-</span> 삭제</button>      
+          </div>   
+          
         </div>
 
         <div class="gridWrap">
@@ -2544,6 +2537,13 @@
         document.getElementById("currentCharLabel").textContent = state.activeChar;
         document.getElementById("todayLabel").innerHTML = "<strong>" + state.today + "</strong>요일";
 
+          // ✅ 툴바 버튼 라벨에 현재 캐릭터 이름 반영
+        var t1 = document.getElementById("toolbarCharName");
+        if (t1) t1.textContent = state.activeChar;
+      
+        var t2 = document.getElementById("toolbarCharName2");
+        if (t2) t2.textContent = state.activeChar;
+        
         var toggleBtn = document.getElementById("toggleViewBtn");
         toggleBtn.textContent = (state.viewMode === "today") ? "전체 보기" : "오늘만 보기";
 
