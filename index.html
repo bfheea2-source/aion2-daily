@@ -414,6 +414,153 @@
       font-size:12px;
     }
 
+    .appTitle{
+      margin:0;
+      font-size:26px;
+      letter-spacing:0.6px;
+    }
+    .appSub{
+      margin-top:6px;
+      color:#666;
+      font-size:12px;
+    }
+
+    /* ===== 표를 “덜 휑하게” 만드는 AION2 스타일 ===== */
+    
+    /* 표 자체를 카드처럼 */
+    #gridTable{
+      border-collapse:separate !important;
+      border-spacing:0 !important;
+      border:1px solid #d9dde3 !important;
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    /* 헤더를 더 컴팩트하게 */
+    #gridTable thead th{
+      background:linear-gradient(180deg,#f7f8fb,#eef1f6) !important;
+      border:0 !important;
+      border-bottom:1px solid #d9dde3 !important;
+      padding:10px 10px !important;
+    }
+    
+    /* 셀 경계선 “검정 격자” 느낌 줄이기 */
+    #gridTable td{
+      border:0 !important;
+      border-bottom:1px solid #edf0f4 !important;
+      padding:10px 10px !important;
+    }
+    
+    /* 행 줄무늬를 더 부드럽게 */
+    #gridTable tbody tr:nth-child(odd) td{
+      background:#fbfcff !important;
+    }
+    #gridTable tbody tr:nth-child(even) td{
+      background:#ffffff !important;
+    }
+    #gridTable tbody tr:hover td{
+      background:#f2f6ff !important;
+    }
+    
+    /* 왼쪽 숙제 컬럼 */
+    #gridTable th.taskCol{
+      width:210px !important;
+      background:linear-gradient(180deg,#fff2ea,#ffe0cf) !important;
+      border-right:1px solid #d9dde3 !important;
+    }
+    
+    #gridTable td.taskName{
+      border-right:1px solid #edf0f4 !important;
+      background:#fff !important;
+      text-align:left !important;
+      padding-left:12px !important;
+      white-space:nowrap;
+    }
+    
+    /* 숙제명: 아이콘/라벨 느낌 */
+    .taskTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+    }
+    .taskIcon{
+      width:26px;
+      height:26px;
+      border-radius:9px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#eef3ff;
+      border:1px solid #dbe6ff;
+      font-size:14px;
+    }
+    
+    /* 주 1회 뱃지 업그레이드 */
+    .badgeWeekly{
+      border:1px solid #d6dbe6 !important;
+      background:#f7f8fb !important;
+      font-weight:900;
+    }
+    
+    /* 요일 헤더: 버튼 2개를 “작게” */
+    .dayHead{ gap:6px !important; }
+    .dayBtns{
+      flex-direction:row !important; /* ✅ 세로 → 가로 */
+      gap:6px !important;
+    }
+    .dayBtns button{
+      width:auto !important;
+      padding:4px 8px !important;
+      border-radius:999px !important;
+      font-size:11px !important;
+      background:#fff !important;
+    }
+    
+    /* 체크박스를 칩으로 감싸서 빈칸 제거 */
+    .cellChip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid #d6dbe6;
+      background:#fff;
+      font-size:12px;
+    }
+    
+    /* 회랑 mini도 칩 느낌 */
+    .hoerangBox{ gap:6px !important; }
+    .mini{
+      border:1px solid #d6dbe6;
+      background:#fff;
+      padding:5px 8px;
+      border-radius:999px;
+    }
+    
+    /* 카운터 박스도 “칩” + 좌우 정렬 */
+    .conqBox{
+      gap:6px !important;
+    }
+    .conqCtr{
+      background:#fff;
+      border:1px solid #d6dbe6;
+      border-radius:999px;
+      padding:6px 8px;
+    }
+    .conqCtr button{
+      background:#f7f8fb !important;
+    }
+    .conqInfo{
+      background:#fff;
+      border:1px dashed #d6dbe6;
+      border-radius:10px;
+      padding:6px 8px;
+    }
+
+    
     .sidePanel{
       width:280px;
       background:#fff;
@@ -759,8 +906,8 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>아이온2 숙제</h1>
-        <div class="note"></div>
+        <h1 class="appTitle">AION2</h1>
+        <div class="appSub">일일/주간 숙제 체크 · 캐릭터별 자동 저장</div>
       </div>
       <div class="headerRight">
         <div class="syncRow">
@@ -2824,16 +2971,43 @@
           var taskName = TASKS[t];
           tr = document.createElement("tr");
 
-          var nameTd = document.createElement("td");
-          nameTd.className = "taskName";
-          nameTd.textContent = taskName;
-
-          if (isWeeklyTask(taskName)){
-            var badge = document.createElement("span");
-            badge.className = "badgeWeekly";
-            badge.textContent = "주 1회";
-            nameTd.appendChild(badge);
-          }
+        var nameTd = document.createElement("td");
+        nameTd.className = "taskName";
+        
+        /* 아이콘 맵 */
+        var iconMap = {
+          "보급의뢰":"📦",
+          "주간보급의뢰":"🧾",
+          "사명":"🎯",
+          "악몽":"🌙",
+          "일일던전":"🏰",
+          "각성전":"⚡",
+          "토벌전":"🐉",
+          "정복":"🏆",
+          "초월":"👑",
+          "회랑":"🌀"
+        };
+        
+        var titleWrap = document.createElement("div");
+        titleWrap.className = "taskTitle";
+        
+        var icon = document.createElement("div");
+        icon.className = "taskIcon";
+        icon.textContent = iconMap[taskName] || "✅";
+        
+        var label = document.createElement("span");
+        label.textContent = taskName;
+        
+        titleWrap.appendChild(icon);
+        titleWrap.appendChild(label);
+        nameTd.appendChild(titleWrap);
+        
+        if (isWeeklyTask(taskName)){
+          var badge = document.createElement("span");
+          badge.className = "badgeWeekly";
+          badge.textContent = "주 1회";
+          nameTd.appendChild(badge);
+        }
 
           tr.appendChild(nameTd);
 
@@ -3180,9 +3354,19 @@
                 render();
               });
             })(taskName, day, cb2);
-
-            td.appendChild(cb2);
+            
+            var chip = document.createElement("label");
+            chip.className = "cellChip";
+            
+            chip.appendChild(cb2);
+            
+            var txt = document.createElement("span");
+            txt.textContent = "완료";
+            chip.appendChild(txt);
+            
+            td.appendChild(chip);
             tr.appendChild(td);
+
           }
 
           tbody.appendChild(tr);
