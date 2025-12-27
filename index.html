@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AION2 일일숙제</title>
+
   <style>
     :root{
       --border:#111;
@@ -72,9 +73,7 @@
       user-select:none;
     }
 
-    .tab.dragging{
-      opacity:0.4;
-    }
+    .tab.dragging{ opacity:0.4; }
     .tab.active{
       background:var(--tabActive);
       border-color:#bbb;
@@ -356,12 +355,12 @@
       white-space:nowrap;
       word-break:keep-all;
     }
-    
+
     button.cloud {
       background:#eef4ff;
       border-color:#8fb3ff;
     }
-    
+
     .toolSep {
       width:1px;
       height:26px;
@@ -431,7 +430,7 @@
       -ms-user-select: none;
       caret-color: transparent;
     }
-    
+
     .sidePanel h3{
       margin:0;
       font-size:14px;
@@ -460,15 +459,6 @@
       align-items:center;
       justify-content:flex-end;
       gap:6px;
-    }
-
-    .sidePlusBtn{
-      width:24px;
-      height:24px;
-      padding:0;
-      border-radius:8px;
-      font-weight:900;
-      line-height:1;
     }
 
     .sideItem{
@@ -521,9 +511,7 @@
       color:#333;
     }
 
-    .sideGap{
-      height:12px;
-    }
+    .sideGap{ height:12px; }
 
     .sideHead{
       display:flex;
@@ -534,13 +522,6 @@
       margin-bottom:10px;
       padding-bottom:8px;
       border-bottom:1px solid #eee;
-    }
-
-    .sideHead h3{
-      margin:0;
-      padding:0;
-      border:0;
-      flex:0 0 auto;
     }
 
     .editBtn{
@@ -649,42 +630,60 @@
       font-weight:900;
     }
 
-    .btnPrimary:hover{
-      opacity:0.9;
-    }
+    .btnPrimary:hover{ opacity:0.9; }
     .note{font-size:12px;color:var(--muted);}
   </style>
 
-      <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-      import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    
-      const firebaseConfig = {
-        apiKey: "AIzaSyChkORuRT7JNcN3UtYOYAydCXLzZyehYvI",
-        authDomain: "aion2-61196.firebaseapp.com",
-        projectId: "aion2-61196",
-        storageBucket: "aion2-61196.firebasestorage.app",
-        messagingSenderId: "842564133938",
-        appId: "1:842564133938:web:93133616ef96942f56882b"
-      };
-    
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-    
-      // 전역으로 노출 (기존 코드와 섞기 위함)
-      window.__fb = {
-        auth, db,
-        GoogleAuthProvider,
-        signInWithPopup,
-        onAuthStateChanged,
-        signOut,
-        doc, getDoc, setDoc, serverTimestamp
-      };
-    </script>
-  
+  <!-- ✅ Firebase (window.__fb) : 여기서 반드시 GoogleAuthProvider 포함 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyChkORuRT7JNcN3UtYOYAydCXLzZyehYvI",
+      authDomain: "aion2-61196.firebaseapp.com",
+      projectId: "aion2-61196",
+      storageBucket: "aion2-61196.firebasestorage.app",
+      messagingSenderId: "842564133938",
+      appId: "1:842564133938:web:93133616ef96942f56882b",
+      measurementId: "G-PHQZSHBK24"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ✅ 핵심: 이 구조가 그대로 있어야 loginBtn이 안터짐
+    window.__fb = {
+      auth,
+      db,
+      GoogleAuthProvider,
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    };
+
+    console.log("Firebase ready:", window.__fb);
+  </script>
 </head>
+
 <body>
   <div class="wrap">
     <header>
@@ -720,20 +719,18 @@
             <button id="addCharBtn" type="button">캐릭터 추가</button>
             <button id="renameCharBtn" type="button">이름 수정(리네임)</button>
             <button id="removeCharBtn" type="button" class="danger">현재 캐릭터 삭제</button>
-          
+
             <button id="resetCharBtn" type="button">이 캐릭터 전체 초기화</button>
             <button id="resetAllBtn" type="button">모든 캐릭터 전체 초기화</button>
-          
+
             <button id="exportBtn" type="button">백업 내보내기(JSON)</button>
             <button id="importBtn" type="button">복원 가져오기(JSON)</button>
-          
-            <!-- 🔽 Firebase 로그인 / 로그아웃 -->
+
             <span class="toolSep"></span>
-          
+
             <button id="loginBtn" type="button" class="cloud">Google 로그인</button>
             <button id="logoutBtn" type="button" class="cloud" style="display:none;">로그아웃</button>
           </div>
-          
         </div>
 
         <div class="gridWrap">
@@ -768,7 +765,6 @@
           </span>
         </div>
 
-        
         <div class="sideItem">
           <strong>다음 오드</strong>
           <span id="sideOddNext">-</span>
@@ -866,7 +862,6 @@
         </div>
       </div>
     </div>
-
 
     <footer>
       - “오늘만 보기”는 오늘 요일 열만 표시합니다. 버튼으로 “전체 보기(월~일)”로 전환 가능합니다.<br/>
@@ -1001,7 +996,8 @@
     </div>
   </div>
 
-  <script>
+  <!-- ✅ 중요: 아래도 module로 바꿔서, head의 Firebase module 실행 후에 실행되게 함 -->
+  <script type="module">
     (function(){
       "use strict";
 
@@ -1013,19 +1009,14 @@
       var CHO_WOL = "초월";
       var CHO_WOL_PARTS = ["데우스","아르카니스"];
 
-      // ✅ 일일던전 추가
       var TASKS = ["보급의뢰","주간보급의뢰","사명","악몽","일일던전","각성전","토벌전","정복",CHO_WOL,HOERANG];
-
       var WEEKLY_TASK_MAP = {"각성전": true, "토벌전": true, "주간보급의뢰": true};
 
-      // ★ 키를 올려서(버전업) 저장 구조 꼬임 방지
       var STORAGE_KEY = "dailyQuestManager.v6_2";
 
       var SHUGO_PREF_KEY = "dailyQuestManager.shugoPrefs.v1";
 
-      var shugoPrefs = {
-        enabled: false  // 앱 내부에서 "슈고 알람 사용" 여부
-      };
+      var shugoPrefs = { enabled: false };
 
       var FALLBACK_KEYS = [
         "dailyQuestManager.v6_1",
@@ -1057,9 +1048,7 @@
       };
 
       var SHUGO_KEY = "shugoFesta.v1";
-      var shugoState = {     
-        lastPreFiredIso: ""    // 3분 전 알림 중복 방지
-      };
+      var shugoState = { lastPreFiredIso: "" };
 
       function ensureToastHost(){
         var host = document.getElementById("toastHost");
@@ -1093,17 +1082,11 @@
 
         host.appendChild(el);
 
-        // 애니메이션 show
-        setTimeout(function(){
-          el.classList.add("show");
-        }, 10);
+        setTimeout(function(){ el.classList.add("show"); }, 10);
 
-        // 자동 제거
         setTimeout(function(){
           el.classList.remove("show");
-          setTimeout(function(){
-            try{ el.remove(); } catch(e){}
-          }, 220);
+          setTimeout(function(){ try{ el.remove(); } catch(e){} }, 220);
         }, ms);
       }
 
@@ -1118,13 +1101,9 @@
         } catch(e){}
       }
 
-
       function saveShugoState(){
-        try{
-          localStorage.setItem(SHUGO_KEY, JSON.stringify(shugoState));
-        } catch(e){}
+        try{ localStorage.setItem(SHUGO_KEY, JSON.stringify(shugoState)); } catch(e){}
       }
-      
 
       function askSetNumber(title, currentValue, hint){
         var s = prompt(
@@ -1144,19 +1123,14 @@
         return n;
       }
 
-      // ✅ 추가 오드에너지(charged) 값을 '설정'
       function setBonusOdd(char, newValue){
         ensureCharStructures(char);
-
         state.oddEnergy[char].charged = newValue;
-
         if (state.oddEnergy[char].charged < 0) state.oddEnergy[char].charged = 0;
-
         save("추가 오드에너지 설정=" + newValue);
         render();
       }
 
-      // ✅ 추가 입장권(bonus) 값을 '설정'
       function setBonusTicket(char, type, newValue, label){
         ensureCharStructures(char);
 
@@ -1164,10 +1138,8 @@
         if (!c) return;
 
         c.bonus = newValue;
-
         if (c.bonus < 0) c.bonus = 0;
 
-        // used가 총보유(base+bonus)보다 크면 clamp
         var total = (c.base || 0) + (c.bonus || 0);
         if (typeof c.used !== "number" || c.used < 0) c.used = 0;
         if (c.used > total) c.used = total;
@@ -1175,7 +1147,6 @@
         save((label || type) + " 추가입장권 설정=" + newValue);
         render();
       }
-
 
       function getNextShugoTime(now){
         var d = new Date(now.getTime());
@@ -1218,9 +1189,7 @@
           tone(784, now + 0.5, 0.25);
           tone(1046, now + 0.8, 0.4);
 
-          setTimeout(function(){
-            ctx.close();
-          }, 2000);
+          setTimeout(function(){ ctx.close(); }, 2000);
         } catch(e){}
       }
 
@@ -1243,7 +1212,6 @@
             osc.stop(start + dur);
           }
 
-          // 🎵 짧고 신나는 아케이드 리프 (총 약 2.2초)
           tone(880, now + 0.0, 0.18, 0.06);
           tone(1175, now + 0.2, 0.18, 0.06);
           tone(1568, now + 0.4, 0.25, 0.07);
@@ -1253,28 +1221,21 @@
 
           tone(1760, now + 1.4, 0.35, 0.08);
 
-          setTimeout(function(){
-            ctx.close();
-          }, 2600);
+          setTimeout(function(){ ctx.close(); }, 2600);
         } catch(e){}
       }
 
       function notifyShugo(title, body){
-        // Notification 우선
         if ("Notification" in window && Notification.permission === "granted"){
-          try{
-            new Notification(title, { body: body });
-          } catch(e){}
+          try{ new Notification(title, { body: body }); } catch(e){}
           return true;
         }
         return false;
       }
 
       function requestShugoPermission(){
-        // 버튼 클릭에서 호출되므로 "미리듣기" 가능
         playShugoFestaSound();
 
-        // 알림 미지원이면 앱은 "소리 알람"만 ON 상태로 저장
         if (!("Notification" in window)){
           shugoPrefs.enabled = true;
           saveShugoPrefs();
@@ -1283,32 +1244,25 @@
           return;
         }
 
-        // 이미 허용이면: 앱 내부 ON 저장 + 테스트 알림
         if (Notification.permission === "granted"){
           shugoPrefs.enabled = true;
           saveShugoPrefs();
           updateShugoAlarmBtn();
 
-          try{
-            new Notification("슈고페스타 알람 테스트", { body: "3분 전 알림 예시입니다." });
-          } catch(e){}
+          try{ new Notification("슈고페스타 알람 테스트", { body: "3분 전 알림 예시입니다." }); } catch(e){}
           return;
         }
 
-        // 아직 미결정이면 요청
         Notification.requestPermission().then(function(p){
           if (p === "granted"){
             shugoPrefs.enabled = true;
             saveShugoPrefs();
             updateShugoAlarmBtn();
 
-            try{
-              new Notification("슈고페스타 알람 허용 완료", { body: "3분 전 알림으로 알려드릴게요!" });
-            } catch(e){}
+            try{ new Notification("슈고페스타 알람 허용 완료", { body: "3분 전 알림으로 알려드릴게요!" }); } catch(e){}
             return;
           }
 
-          // 거부/기타
           shugoPrefs.enabled = false;
           saveShugoPrefs();
           updateShugoAlarmBtn();
@@ -1321,7 +1275,6 @@
         var btn = document.getElementById("shugoAlarmBtn");
         if (!btn) return;
 
-        // ON/OFF 표기 (앱 내부 enabled 기준)
         if (shugoPrefs.enabled){
           btn.textContent = "알람 ON / 미리듣기";
           btn.classList.add("btnPrimary");
@@ -1343,8 +1296,8 @@
 
         remainEl.textContent = formatRemainHMS(remain) + " 남음";
         nextEl.textContent = formatDateHM(next) + " (15/45분)";
-        // ✅ 3분 전(180초) 예고 알림: 남은시간이 180초 구간에 들어오면 1회만
-        if (remain <= 180000 && remain > 178800){ // 180.0s ~ 178.8s (약 1.2초 윈도우)
+
+        if (remain <= 180000 && remain > 178800){
           var preKey = next.toISOString();
 
           if (shugoState.lastPreFiredIso !== preKey){
@@ -1352,7 +1305,7 @@
             saveShugoState();
 
             var okPre = notifyShugo("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")");
-            
+
             playRewardSound();
             if (!okPre && (!("Notification" in window) || Notification.permission !== "granted")){
               showToast("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")", 3500);
@@ -1421,6 +1374,7 @@
               d[TASKS[t]][DAYS[day]] = false;
             }
           }
+
           if (TASKS[t] === CHO_WOL){
             d[CHO_WOL] = {};
             for (day = 0; day < DAYS.length; day += 1){
@@ -1435,10 +1389,9 @@
         return {
           normal: 0,
           charged: 0,
-          lastBaseCharge: ""   // 마지막 기본 오드 충전 기준 시각
+          lastBaseCharge: ""
         };
       }
-
 
       function buildDefaultCount(){
         return {
@@ -1789,11 +1742,12 @@
           charMeta: state.charMeta,
           meta: { savedAt: nowIso(), reason: reason || "auto" }
         };
-        
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         updateSavedLabel(payload.meta.savedAt);
+
         if (fbUser){
-          fbSave(payload);   // 🔥 Firebase 동기화
+          fbSave(payload);
         }
       }
 
@@ -2213,11 +2167,6 @@
         return true;
       }
 
-      function getConquestPossible(charName){
-        var total = getOddTotal(charName);
-        return Math.floor(total / 40);
-      }
-
       function getOddChargeSlot(date){
         var d = new Date(date);
         d.setMinutes(0, 0, 0);
@@ -2233,11 +2182,11 @@
         var now = Date.now();
 
         if (!odd.lastBaseCharge){
-            return;
+          return;
         }
 
         var last = new Date(odd.lastBaseCharge).getTime();
-        var interval = 3 * 60 * 60 * 1000; // 3시간
+        var interval = 3 * 60 * 60 * 1000;
 
         var passed = now - last;
         if (passed < interval) return;
@@ -2246,7 +2195,6 @@
         if (count <= 0) return;
 
         odd.normal = Math.min(840, odd.normal + count * 15);
-
         odd.lastBaseCharge = new Date(last + count * interval).toISOString();
         save("기본 오드 자동 충전");
       }
@@ -2255,10 +2203,7 @@
         ensureCharStructures(char);
         var odd = state.oddEnergy[char];
 
-        var base = odd.lastBaseCharge
-          ? new Date(odd.lastBaseCharge)
-          : new Date();
-
+        var base = odd.lastBaseCharge ? new Date(odd.lastBaseCharge) : new Date();
         var next = new Date(base.getTime() + 3 * 60 * 60 * 1000);
         return next;
       }
@@ -2301,14 +2246,12 @@
         save("악몽 자동충전");
       }
 
-
-
       function autoChargeWeekly(char, type){
         var c = state.counts[char][type];
 
         var now = new Date();
         var w = new Date(now);
-        w.setDate(w.getDate() - w.getDay() + 3); // 수요일
+        w.setDate(w.getDate() - w.getDay() + 3);
         w.setHours(6,0,0,0);
         if (now < w) w.setDate(w.getDate() - 7);
 
@@ -2320,13 +2263,12 @@
         save(type + " 자동충전");
       }
 
-      // ✅ 일일던전: 매주 수요일 05:00, 기본입장권 7장(최대7)으로 리필, used는 주간 기준으로 리셋
       function autoChargeDailyDungeon(char){
         var c = state.counts[char].dailyDungeon;
 
         var now = new Date();
         var w = new Date(now);
-        w.setDate(w.getDate() - w.getDay() + 3); // 수요일
+        w.setDate(w.getDate() - w.getDay() + 3);
         w.setHours(5,0,0,0);
         if (now < w) w.setDate(w.getDate() - 7);
 
@@ -2335,7 +2277,7 @@
 
         c.base = 7;
         if (typeof c.used !== "number" || c.used < 0) c.used = 0;
-        c.used = 0;     // 주간 리셋
+        c.used = 0;
         c.lastCharge = key;
 
         save("일일던전 자동충전");
@@ -2344,7 +2286,7 @@
       function runAutoCharges(){
         var char = state.activeChar;
         ensureCharStructures(char);
-        autoChargeBaseOdd(char);   // 🔥 추가
+        autoChargeBaseOdd(char);
         autoChargeNightmare(char);
         autoChargeWeekly(char, "raid");
         autoChargeWeekly(char, "awakening");
@@ -2370,7 +2312,6 @@
 
       function conquestInc40(charName, dayName){
         ensureCharStructures(charName);
-
         if (getOddTotal(charName) < 40) return false;
 
         var logArr = state.conquestSpendLog[charName][dayName];
@@ -2384,7 +2325,6 @@
 
       function conquestInc80(charName, dayName){
         ensureCharStructures(charName);
-
         if (getOddTotal(charName) < 80) return false;
 
         var logArr = state.conquestSpendLog[charName][dayName];
@@ -2423,7 +2363,6 @@
 
       function transcendInc(charName, dayName, part){
         ensureCharStructures(charName);
-
         if (getOddTotal(charName) < 40) return false;
 
         if (state.oddEnergy[charName].normal >= 40){
@@ -2441,7 +2380,6 @@
 
       function transcendInc80(charName, dayName, part){
         ensureCharStructures(charName);
-
         if (getOddTotal(charName) < 80) return false;
 
         var logArr = state.transcendSpendLog[charName][dayName][part];
@@ -2455,7 +2393,6 @@
 
       function transcendDec(charName, dayName, part){
         ensureCharStructures(charName);
-
         if (state.transcendUsed[charName][dayName][part] <= 0) return false;
 
         state.transcendUsed[charName][dayName][part] -= 1;
@@ -2465,16 +2402,6 @@
 
         save("초월 -1 " + part);
         return true;
-      }
-
-      function getConquestTotalRuns(charName){
-        ensureCharStructures(charName);
-        var sum = 0;
-        var i;
-        for (i = 0; i < DAYS.length; i += 1){
-          sum += state.conquestUsed[charName][DAYS[i]] || 0;
-        }
-        return sum;
       }
 
       function renderTabs(){
@@ -2506,7 +2433,7 @@
             });
 
             el.addEventListener("dragover", function(ev){
-              ev.preventDefault(); // drop 허용
+              ev.preventDefault();
             });
 
             el.addEventListener("drop", function(){
@@ -2653,7 +2580,6 @@
         var rdBase = readInt("editRaidBase");
         var rdBonus = readInt("editRaidBonus");
 
-        // (1) 이름 변경 처리
         if (newName !== oldName){
           var idx = state.characters.indexOf(oldName);
           if (idx >= 0) state.characters[idx] = newName;
@@ -2674,7 +2600,6 @@
           state.activeChar = newName;
         }
 
-        // (2) 값 반영
         ensureCharStructures(state.activeChar);
 
         state.charMeta[state.activeChar].itemLevel = itemLevel;
@@ -2699,7 +2624,6 @@
         rd.base = rdBase;
         rd.bonus = rdBonus;
 
-        // used는 기존값 유지하되, 총보유(base+bonus) 넘어가면 clamp
         function clampUsed(counterObj){
           var total = (counterObj.base || 0) + (counterObj.bonus || 0);
           if (typeof counterObj.used !== "number" || counterObj.used < 0) counterObj.used = 0;
@@ -2711,8 +2635,6 @@
         clampUsed(aw);
         clampUsed(rd);
 
-
-        // (3) 저장 + 닫기 + 렌더
         save("캐릭터 정보 수정(모달)");
         closeEditModal();
         render();
@@ -2732,7 +2654,6 @@
         document.getElementById("sideOddTotal").textContent = oddTotal;
 
         var possible = Math.floor(oddTotal / 40);
-
         document.getElementById("sideConquest").textContent = possible + " 회";
         document.getElementById("sideTranscend").textContent = possible + " 회";
 
@@ -2745,17 +2666,12 @@
         document.getElementById("sideDailyDungeonAvail").textContent = getAvailableCount(dd) + " 회";
         document.getElementById("sideAwakeningAvail").textContent = getAvailableCount(aw) + " 회";
         document.getElementById("sideRaidAvail").textContent = getAvailableCount(rd) + " 회";
+
         var next = getNextOddChargeTime(char);
         var remain = next - new Date();
 
         document.getElementById("sideOddNext").textContent =
           formatRemain(remain) + " 후 (+15)";
-
-        var atEl = document.getElementById("sideOddNextAt");
-        if (atEl){
-          atEl.textContent = formatTimeHM(next);
-        }
-
       }
 
       function renderGrid(){
@@ -2845,7 +2761,6 @@
             day = visibleDays[d];
             var td = document.createElement("td");
 
-            // ===== 정복 =====
             if (taskName === "정복"){
               ensureCharStructures(state.activeChar);
 
@@ -2907,7 +2822,6 @@
               continue;
             }
 
-            // ===== 악몽 =====
             if (taskName === "악몽") {
               ensureCharStructures(state.activeChar);
 
@@ -2963,7 +2877,6 @@
               continue;
             }
 
-            // ===== 일일던전 =====
             if (taskName === "일일던전") {
               ensureCharStructures(state.activeChar);
 
@@ -3019,7 +2932,6 @@
               continue;
             }
 
-            // ===== 토벌전/각성전 =====
             if (taskName === "토벌전" || taskName === "각성전") {
               ensureCharStructures(state.activeChar);
 
@@ -3075,7 +2987,6 @@
               continue;
             }
 
-            // ===== 회랑 =====
             if (taskName === HOERANG){
               var hbox = document.createElement("div");
               hbox.className = "hoerangBox";
@@ -3113,7 +3024,6 @@
               continue;
             }
 
-            // ===== 초월 =====
             if (taskName === CHO_WOL){
               ensureCharStructures(state.activeChar);
 
@@ -3179,7 +3089,6 @@
               continue;
             }
 
-            // ===== 기본 체크박스 =====
             var cb2 = document.createElement("input");
             cb2.type = "checkbox";
             cb2.checked = getValue(state.activeChar, taskName, day);
@@ -3213,7 +3122,7 @@
         on("addCharBtn", "click", function(){ addCharacter(); });
         on("renameCharBtn", "click", function(){ renameCurrentCharacter(); });
         on("removeCharBtn", "click", function(){ removeCurrentCharacter(); });
-        
+
         on("prevCharBtn", "click", function(){ switchCharByDelta(-1); });
         on("nextCharBtn", "click", function(){ switchCharByDelta(+1); });
 
@@ -3255,37 +3164,13 @@
         });
 
         on("shugoAlarmBtn", "click", function(){ requestShugoPermission(); });
-                
-        // ===== 사이드패널 "값 수정" 버튼들 =====
+
         on("sideOddAddBtn", "click", function(){
           var char = state.activeChar;
           ensureCharStructures(char);
 
           var cur = state.oddEnergy[char].charged || 0;
           var n = askSetNumber("추가 오드에너지 수정", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
-          if (n === null) return;
-
-          setBonusOdd(char, n);
-        });
-
-        // 정복/초월도 bonus odd(=charged) 수정으로 통일
-        on("sideConqAddBtn", "click", function(){
-          var char = state.activeChar;
-          ensureCharStructures(char);
-
-          var cur = state.oddEnergy[char].charged || 0;
-          var n = askSetNumber("추가 오드에너지 수정(정복)", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
-          if (n === null) return;
-
-          setBonusOdd(char, n);
-        });
-
-        on("sideTransAddBtn", "click", function(){
-          var char = state.activeChar;
-          ensureCharStructures(char);
-
-          var cur = state.oddEnergy[char].charged || 0;
-          var n = askSetNumber("추가 오드에너지 수정(초월)", cur, "추가 오드에너지(충전) 값을 '설정'합니다.");
           if (n === null) return;
 
           setBonusOdd(char, n);
@@ -3342,18 +3227,23 @@
 
           setBonusTicket(char, "raid", n, "토벌전");
         });
-        
+
+        // ✅ 여기 수정: window.__fb / GoogleAuthProvider 보장
         on("loginBtn", "click", function(){
+          if (!window.__fb || !window.__fb.GoogleAuthProvider){
+            alert("Firebase가 아직 준비되지 않았습니다.\n새로고침 후 다시 시도하세요.");
+            return;
+          }
+
           var fb = window.__fb;
           var provider = new fb.GoogleAuthProvider();
           fb.signInWithPopup(fb.auth, provider);
         });
-        
+
         on("logoutBtn", "click", function(){
+          if (!window.__fb) return;
           window.__fb.signOut(window.__fb.auth);
         });
-
-
 
         (function(){
           var overlay = document.getElementById("editModal");
@@ -3362,19 +3252,16 @@
           var downOnOverlay = false;
 
           overlay.addEventListener("pointerdown", function(ev){
-            // 오버레이(배경)에서 시작했을 때만 true
             downOnOverlay = (ev.target === overlay);
           });
 
           overlay.addEventListener("pointerup", function(ev){
-            // 시작도 오버레이, 끝도 오버레이일 때만 닫기
             if (downOnOverlay && ev.target === overlay){
               closeEditModal();
             }
             downOnOverlay = false;
           });
 
-          // 안전장치: pointercancel에서도 초기화
           overlay.addEventListener("pointercancel", function(){
             downOnOverlay = false;
           });
@@ -3386,12 +3273,10 @@
 
         var odd = state.oddEnergy[char];
 
-        // 이미 기준 있으면 안 뜸
         if (odd.lastBaseCharge){
           return;
         }
 
-        // ✅ 모달 열린 동안 1번만 띄우기 (취소/포커스 반복 방지)
         if (state.__oddCalibPromptedOnce){
           return;
         }
@@ -3421,7 +3306,6 @@
         save("기본 오드 기준 보정");
       }
 
-
       function bindEditTotalLive(){
         function val(id){
           var el = document.getElementById(id);
@@ -3447,6 +3331,7 @@
           var rdTotalEl = document.getElementById("editRaidTotal");
           if (rdTotalEl) rdTotalEl.value = val("editRaidBase") + val("editRaidBonus");
         }
+
         [
           "editOddNormal","editOddCharged",
           "editNightmareBase","editNightmareBonus",
@@ -3457,13 +3342,12 @@
           var el = document.getElementById(id);
           if (!el) return;
 
-          // ✅ 오드 입력칸: 포커스만 와도 보정 prompt + 총합 갱신
           if (id === "editOddNormal" || id === "editOddCharged"){
             el.onfocus = function(){
               calibrateBaseOddIfNeeded(state.activeChar);
               refresh();
             };
-            el.oninput = refresh; // 입력 중 총합 갱신
+            el.oninput = refresh;
             return;
           }
 
@@ -3484,13 +3368,13 @@
         renderGrid();
         renderSidePanel();
       }
-      
+
       var fbUser = null;
-      
+
       function fbSave(payload){
         if (!fbUser || !window.__fb) return Promise.resolve();
         var fb = window.__fb;
-      
+
         return fb.setDoc(
           fb.doc(fb.db, "users", fbUser.uid),
           { payload: payload, updatedAt: fb.serverTimestamp() },
@@ -3499,11 +3383,11 @@
           return;
         });
       }
-      
+
       function fbLoad(){
         if (!fbUser || !window.__fb) return Promise.resolve(null);
         var fb = window.__fb;
-      
+
         return fb.getDoc(fb.doc(fb.db, "users", fbUser.uid))
           .then(function(snap){
             if (!snap.exists()) return null;
@@ -3516,38 +3400,26 @@
       }
 
       function init(){
-        
-        if (!window.__fb){
-          // Firebase 스크립트가 아직 준비 안 된 경우: 로컬만으로라도 동작
-          loadShugoState();
-          wireButtons();
-          loadShugoPrefs();
-          updateShugoAlarmBtn();
-      
-          updateShugoPanel();
-          setInterval(updateShugoPanel, 1000);
-      
-          load();
-          render();
-          return;
-        }
-        // 1) 이벤트/설정/버튼 바인딩은 1회만
         loadShugoState();
         wireButtons();
         loadShugoPrefs();
         updateShugoAlarmBtn();
-      
-        // (중요) 타이머도 1회만
+
         updateShugoPanel();
         setInterval(updateShugoPanel, 1000);
-      
-        // 2) 로그인 상태에 따라 데이터 로드 + 렌더는 여기서만!
+
+        if (!window.__fb){
+          load();
+          render();
+          return;
+        }
+
         window.__fb.onAuthStateChanged(window.__fb.auth, function(user){
           fbUser = user;
-      
+
           var loginBtn = document.getElementById("loginBtn");
           var logoutBtn = document.getElementById("logoutBtn");
-      
+
           if (loginBtn && logoutBtn){
             if (user){
               loginBtn.style.display = "none";
@@ -3557,16 +3429,15 @@
               logoutBtn.style.display = "none";
             }
           }
-      
+
           if (user){
             fbLoad().then(function(remote){
               if (remote){
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
               }
-      
-              // ✅ 여기서만 로드/렌더
+
               load();
-      
+
               var raw = localStorage.getItem(STORAGE_KEY);
               if (raw){
                 try{
@@ -3576,13 +3447,12 @@
                   }
                 } catch(e){}
               }
-      
+
               render();
             });
           } else {
-            // ✅ 로그아웃이면 로컬만 사용
             load();
-      
+
             var raw2 = localStorage.getItem(STORAGE_KEY);
             if (raw2){
               try{
@@ -3592,12 +3462,11 @@
                 }
               } catch(e){}
             }
-      
+
             render();
           }
         });
       }
-
 
       init();
     })();
