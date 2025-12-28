@@ -52,7 +52,15 @@
       height:100%;
       overflow:hidden; /* 페이지 스크롤 제거 */
     }
+        /* ✅ 커서 완전 숨김 */
+    html, body, .wrap, .wrap *{
+      cursor: none !important;
+    }
     
+    /* (선택) 포커스 외곽선 때문에 “툭” 하는 느낌도 같이 제거 */
+    button:focus, .tab:focus, input:focus{
+      outline: none !important;
+    }
     .card{
       flex:1 1 0;
       min-width:0;           /* 테이블이 옆으로 안 밀게 */
@@ -3742,8 +3750,7 @@
         renderTabs();
         renderHeader();
         renderGrid();
-        renderSidePanel();
-        scheduleFitLayout();
+        renderSidePanel();      
       }
 
       var fbUser = null;
@@ -3866,48 +3873,49 @@
         });
       }
 
-      function fitLayoutToViewport(){
-        var wrap = document.querySelector(".wrap");
-        if (!wrap) return;
-      
-        // ✅ 먼저 scale 초기화(원래 크기 측정용)
-        wrap.style.transform = "";
-        wrap.style.width = "";
-        wrap.style.height = "";
-      
-        // body padding(18*2)
-        var bodyPad = 36;
-      
-        // ✅ 1프레임 뒤에 실제 컨텐츠 크기 측정 후 축소
-        requestAnimationFrame(function(){
-          // wrap이 차지해야 하는 실제 컨텐츠 크기
-          var contentW = wrap.scrollWidth;
-          var contentH = wrap.scrollHeight;
-      
-          // 화면 크기(바디 패딩 고려)
-          var vw = window.innerWidth - bodyPad;
-          var vh = window.innerHeight - bodyPad;
-      
-          // 혹시 0 나오는 예외 방지
-          if (contentW < 10) contentW = 10;
-          if (contentH < 10) contentH = 10;
-      
-          var scaleX = vw / contentW;
-          var scaleY = vh / contentH;
-      
-          // ✅ 1보다 크면 확대하지 말고, 작을 때만 축소
-          var s = Math.min(1, scaleX, scaleY);
-      
-          // ✅ 너무 작아지는 것 방지 (가독성 하한)
-          var MIN_SCALE = 0.78;          
-      
-          wrap.style.transform = "scale(" + s + ")";
-          // scale 하면 오른쪽이 잘릴 수 있어서 width 보정
-          wrap.style.width = (100 / s) + "%";
-          wrap.style.height = (100 / s) + "%";
-          document.documentElement.style.setProperty("--uiScale", s.toFixed(3));
-        });
+    function fitLayoutToViewport(){
+      var wrap = document.querySelector(".wrap");
+      if (!wrap) return;
+    
+      // 현재 적용된 스케일 읽기(--uiScale 사용)
+      var s0 = 1;
+      try{
+        var v = getComputedStyle(document.documentElement).getPropertyValue("--uiScale");
+        var n = parseFloat(v);
+        if (isFinite(n) && n > 0) s0 = n;
+      } catch(e){}
+    
+      // 현재 화면에 보이는 크기(rect)를 기반으로 “원래 크기” 역산
+      var rect = wrap.getBoundingClientRect();
+      var baseW = rect.width / s0;
+      var baseH = rect.height / s0;
+    
+      if (baseW < 10) baseW = 10;
+      if (baseH < 10) baseH = 10;
+    
+      var bodyPad = 36;
+      var vw = window.innerWidth - bodyPad;
+      var vh = window.innerHeight - bodyPad;
+    
+      var scaleX = vw / baseW;
+      var scaleY = vh / baseH;
+    
+      var s = Math.min(1, scaleX, scaleY);
+    
+      var MIN_SCALE = 0.78;
+      if (s < MIN_SCALE) s = MIN_SCALE;
+    
+      // ✅ 아주 미세한 변화는 무시(잔떨림 방지)
+      if (Math.abs(s - s0) < 0.01){
+        return;
       }
+    
+      wrap.style.transform = "scale(" + s + ")";
+      wrap.style.width = (100 / s) + "%";
+      wrap.style.height = (100 / s) + "%";
+      document.documentElement.style.setProperty("--uiScale", s.toFixed(3));
+    }
+
 
 
     
