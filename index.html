@@ -28,13 +28,8 @@
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
       background:var(--soft);
       color:#111;
-    }
-    
-    .wrap{
-      height:calc(100vh - 36px); /* body padding 18*2 */
-      display:flex;
-      flex-direction:column;
-    }
+    }    
+
     
     header{
       display:flex;
@@ -131,9 +126,10 @@
     .gridWrap{
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;
+      overflow:visible;   /* ✅ 내부 스크롤 제거 */
       padding:10px;
     }
+
 
     table{
       border-collapse:collapse;
@@ -760,12 +756,13 @@
     
     /* 오른쪽 */
     .sidePanel{
-      flex:0 0 360px;        /* 폭은 원하는대로(340~420 추천) */
+      flex:0 0 360px;
       min-width:360px;
       height:100%;
       min-height:0;
-      overflow:auto;
+      overflow:visible;   /* ✅ 내부 스크롤 제거 */
     }
+
     
     .sidePanel h3{
       margin:0;
@@ -967,6 +964,12 @@
 
     .btnPrimary:hover{ opacity:0.9; }
     .note{font-size:12px;color:var(--muted);}
+
+    /* ✅ 전체 화면 맞춤(scale) 적용을 위한 래퍼 */
+    .wrap{
+      transform-origin: top left;
+    }
+
   </style>
 
   <!-- ✅ Firebase (window.__fb) : 여기서 반드시 GoogleAuthProvider 포함 -->
@@ -3845,28 +3848,49 @@
         }
       }
 
-       function fitLayoutToViewport(){
+      function fitLayoutToViewport(){
         var wrap = document.querySelector(".wrap");
-        var header = document.querySelector("header");
-        var footer = document.querySelector("footer");
-        var layout = document.querySelector(".mainLayout");
-        if (!wrap || !header || !layout) return;
-                  // body padding(18*2) 고려
+        if (!wrap) return;
+      
+        // ✅ 먼저 scale 초기화(원래 크기 측정용)
+        wrap.style.transform = "";
+        wrap.style.width = "";
+        wrap.style.height = "";
+      
+        // body padding(18*2)
         var bodyPad = 36;
-        
-        // footer가 있으면 그 높이만큼 빼기
-        var footerH = footer ? footer.getBoundingClientRect().height : 0;
-        var headerH = header.getBoundingClientRect().height;        
-          // wrap 자체 높
-        var wrapH = window.innerHeight - bodyPad;
-        
-          // mainLayout 높이 = wrap - header - footer - (여유 8px)
-        var layoutH = wrapH - headerH - footerH - 8;
-        if (layoutH < 200) layoutH = 200;
-        
-        wrap.style.height = wrapH + "px";
-        layout.style.height = layoutH + "px";
+      
+        // ✅ 1프레임 뒤에 실제 컨텐츠 크기 측정 후 축소
+        requestAnimationFrame(function(){
+          // wrap이 차지해야 하는 실제 컨텐츠 크기
+          var contentW = wrap.scrollWidth;
+          var contentH = wrap.scrollHeight;
+      
+          // 화면 크기(바디 패딩 고려)
+          var vw = window.innerWidth - bodyPad;
+          var vh = window.innerHeight - bodyPad;
+      
+          // 혹시 0 나오는 예외 방지
+          if (contentW < 10) contentW = 10;
+          if (contentH < 10) contentH = 10;
+      
+          var scaleX = vw / contentW;
+          var scaleY = vh / contentH;
+      
+          // ✅ 1보다 크면 확대하지 말고, 작을 때만 축소
+          var s = Math.min(1, scaleX, scaleY);
+      
+          // ✅ 너무 작아지는 것 방지 (가독성 하한)
+          var MIN_SCALE = 0.78;
+          if (s < MIN_SCALE) s = MIN_SCALE;
+      
+          wrap.style.transform = "scale(" + s + ")";
+          // scale 하면 오른쪽이 잘릴 수 있어서 width 보정
+          wrap.style.width = (100 / s) + "%";
+          wrap.style.height = (100 / s) + "%";
+        });
       }
+
 
     
       function init(){
