@@ -3664,18 +3664,29 @@
         on("editModalCancel", "click", function(){ closeEditModal(); });
         on("editModalCloseX", "click", function(){ closeEditModal(); });
         on("editModalSave", "click", function(){ saveEditModal(); });
-
         on("oddCalibResetBtn", "click", function(){
           var char = state.activeChar;
           ensureCharStructures(char);
-
+        
           var ok = confirm("[" + char + "] 오드 충전 보정을 초기화할까요?\n(다시 시간입력이 필요합니다)");
           if (!ok) return;
-
+        
+          // 1) 보정값 초기화
           state.oddEnergy[char].lastBaseCharge = "";
+        
+          // 2) '최초 1회만' 프롬프트 제한 해제 (초기화 버튼에서는 다시 뜨게)
+          state.__oddCalibPromptedOnce = false;
+        
+          // 3) 초기화하자마자 바로 재보정(입력/복사 흐름) 실행
+          calibrateBaseOddIfNeeded(char);
+        
+          // calibrate 안에서 save()가 이미 돌면 여기 save는 선택
+          // 중복 저장 싫으면 아래 줄은 빼도 됨
           save("오드 보정 초기화");
+        
           render();
         });
+
 
         on("shugoAlarmBtn", "click", function(){
           // ON이면 -> OFF (소리 없음)
@@ -3839,38 +3850,57 @@
 
       function calibrateBaseOddIfNeeded(char){
         ensureCharStructures(char);
-
+      
         var odd = state.oddEnergy[char];
-
+      
+        // 이미 기준이 있으면 끝
         if (odd.lastBaseCharge){
           return;
         }
-
+      
+        // 다른 캐릭터에 보정된 값 있으면 같은 계정인지 물어보기
+        var otherChar = findOtherOddBaseCalibChar(char);
+        if (otherChar){
+          var ok = confirm(
+            "다른 캐릭터에 기본 오드 보정값이 있어요.\n\n" +
+            "같은 계정이라 그 값을 그대로 적용할까요?\n" +
+            "(예: 그대로 적용 / 아니오: 직접 입력)"
+          );
+      
+          if (ok){
+            odd.lastBaseCharge = state.oddEnergy[otherChar].lastBaseCharge;
+            save("기본 오드 기준 보정(복사)");
+            return;
+          }
+          // 아니오면 아래에서 직접 입력받기
+        }
+      
+        // 최초 1회만 안내/입력 (네 기존 정책 유지)
         if (state.__oddCalibPromptedOnce){
           return;
         }
         state.__oddCalibPromptedOnce = true;
-
-        var remainMin = prompt(
-          "기본 오드에너지 다음 충전까지 남은 시간을 분 단위로 입력하세요.\n" +
-          "(예: 1시간 50분 → 110 입력)\n\n" +
+      
+        var remainStr = prompt(
+          "기본 오드에너지 다음 충전까지 남은 시간을 입력하세요.\n" +
+          "예) 1시간10분 / 2시간 / 45분 / 1:10 / 110(분)\n\n" +
           "※ 최초 1회만 필요합니다."
         );
-
-        if (remainMin === null){
+      
+        if (remainStr === null){
           return;
         }
-
-        remainMin = parseInt(remainMin, 10);
-        if (isNaN(remainMin) || remainMin <= 0){
-          alert("올바른 숫자를 입력하세요.");
+      
+        var remainMin = parseDurationKR(remainStr);
+        if (remainMin == null || isNaN(remainMin) || remainMin <= 0){
+          alert("입력 형식이 올바르지 않아요.\n예) 1시간10분 / 2시간 / 45분 / 1:10 / 110");
           return;
         }
-
+      
         var now = Date.now();
-        var interval = 3 * 60 * 60 * 1000;
+        var interval = 3 * 60 * 60 * 1000; // 3시간 주기 고정(기존 유지)
         var last = now + (remainMin * 60 * 1000) - interval;
-
+      
         odd.lastBaseCharge = new Date(last).toISOString();
         save("기본 오드 기준 보정");
       }
@@ -3922,6 +3952,87 @@
 
           el.oninput = refresh;
         });
+      }
+
+
+      function findOtherOddBaseCalibChar(activeCharKey) {
+        if (!state || !state.oddEnergy) return null;
+      
+        for (var ck in state.oddEnergy) {
+          if (!Object.prototype.hasOwnProperty.call(state.oddEnergy, ck)) continue;
+          if (ck === activeCharKey) continue;
+      
+          var odd = state.oddEnergy[ck];
+          if (odd && odd.lastBaseCharge) {
+            return ck; // 다른 캐릭터 key
+          }
+        }
+        return null;
+      }
+
+      function parseDurationKR(input) {
+        if (input == null) return null;
+      
+        var s = String(input).trim();
+        if (!s) return null;
+      
+        // 공백 제거
+        s = s.replace(/\s+/g, "");
+      
+        // 1:10 같은 형식 지원 (h:mm)
+        var colon = s.match(/^(\d+):(\d{1,2})$/);
+        if (colon) {
+          var hh = parseInt(colon[1], 10);
+          var mm = parseInt(colon[2], 10);
+          if (isNaN(hh) || isNaN(mm)) return null;
+          return (hh * 60) + mm;
+        }
+      
+        // "70분" 같은 단일 분
+        var onlyMin = s.match(/^(\d+)분$/);
+        if (onlyMin) {
+          var m1 = parseInt(onlyMin[1], 10);
+          if (isNaN(m1)) return null;
+          return m1;
+        }
+      
+        // "2시간" 같은 단일 시간
+        var onlyHour = s.match(/^(\d+)시간$/);
+        if (onlyHour) {
+          var h1 = parseInt(onlyHour[1], 10);
+          if (isNaN(h1)) return null;
+          return h1 * 60;
+        }
+      
+        // "1시간10분" / "1시간0분"
+        var mix = s.match(/^(\d+)시간(\d+)분$/);
+        if (mix) {
+          var h2 = parseInt(mix[1], 10);
+          var m2 = parseInt(mix[2], 10);
+          if (isNaN(h2) || isNaN(m2)) return null;
+          return (h2 * 60) + m2;
+        }
+      
+        // 숫자만 들어오면 "분"으로 간주 (원치 않으면 이 블록 삭제)
+        var num = s.match(/^\d+$/);
+        if (num) {
+          return parseInt(s, 10);
+        }
+      
+        return null;
+      }
+      
+      function formatDurationKR(totalMin) {
+        if (totalMin == null) return "";
+        var n = parseInt(totalMin, 10);
+        if (isNaN(n) || n < 0) return "";
+      
+        var h = Math.floor(n / 60);
+        var m = n % 60;
+      
+        if (h > 0 && m > 0) return h + "시간" + m + "분";
+        if (h > 0) return h + "시간";
+        return m + "분";
       }
 
       function bindEditTotalLiveOnce(){
