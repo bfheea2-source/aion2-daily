@@ -3743,6 +3743,7 @@
         renderHeader();
         renderGrid();
         renderSidePanel();
+        scheduleFitLayout();
       }
 
       var fbUser = null;
@@ -3854,6 +3855,17 @@
         }
       }
 
+      var __fitQueued = false;
+      function scheduleFitLayout(){
+        if (__fitQueued) return;
+        __fitQueued = true;
+      
+        requestAnimationFrame(function(){
+          __fitQueued = false;
+          fitLayoutToViewport();
+        });
+      }
+
       function fitLayoutToViewport(){
         var wrap = document.querySelector(".wrap");
         if (!wrap) return;
@@ -3901,8 +3913,7 @@
     
       function init(){
         loadShugoState();
-        fitLayoutToViewport();
-        window.addEventListener("resize", fitLayoutToViewport);
+        window.addEventListener("resize", scheduleFitLayout);
         wireButtons();
         loadShugoPrefs();
         updateShugoAlarmBtn();
@@ -3913,6 +3924,7 @@
         if (!window.__fb){
           load();
           render();
+          scheduleFitLayout();
           return;
         }
 
@@ -3940,6 +3952,7 @@
               }
 
               render();
+              scheduleFitLayout();   // ← 여기 추가
             });
           } else {
             load();
@@ -3955,6 +3968,7 @@
             }
 
             render();
+            scheduleFitLayout();   // ← 여기 추가
           }
         });
       }
