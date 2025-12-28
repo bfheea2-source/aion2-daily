@@ -1023,6 +1023,13 @@
       font-weight:900;
     }
 
+    /* 모달(수정 팝업) 안 입력칸은 커서 보이게 */
+    #editModal input,
+    #editModal textarea,
+    #editModal [contenteditable="true"]{
+      caret-color: auto !important;
+    }
+
     .btnPrimary:hover{ opacity:0.9; }
     .note{font-size:12px;color:var(--muted);}
 
@@ -1148,10 +1155,12 @@
           <strong>이름</strong>
           <span class="sideValueWrap">
             <span id="sideCharName">-</span>
-            <button id="sideCharNameEditBtn"
-                    type="button"
-                    class="sideEditBtn"
-                    title="캐릭터 이름 수정">✎</button>
+            <button
+              id="renameCharBtn"
+              type="button"
+              class="sideEditBtn"
+              title="이름 수정"
+            >✎</button>
           </span>
         </div>
         
@@ -3753,12 +3762,10 @@
             var char = state.activeChar;
             if (!char) return;
         
-            if (!state.charMeta[char]) {
-              state.charMeta[char] = {};
-            }
+            ensureCharStructures(char);
         
             var cur = 0;
-            if (typeof state.charMeta[char].itemLevel === "number") {
+            if (state.charMeta[char] && typeof state.charMeta[char].itemLevel === "number") {
               cur = state.charMeta[char].itemLevel;
             }
         
@@ -3767,13 +3774,11 @@
               cur,
               "아이템레벨 값을 입력하세요."
             );
-        
             if (next === null) return;
         
             state.charMeta[char].itemLevel = Math.floor(next);
         
-            saveState();
-            renderSidePanel();
+            save("아이템레벨 수정");
             render();
           });
         }
