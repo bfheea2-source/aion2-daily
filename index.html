@@ -48,19 +48,30 @@
       text-align:right;
     }
 
+    /* ✅ 텍스트 입력 caret(깜빡이는 막대) 제거 */
+    input,
+    textarea,
+    [contenteditable="true"]{
+      caret-color: transparent !important;
+    }
+
+    
     html, body{
       height:100%;
       overflow:hidden; /* 페이지 스크롤 제거 */
     }
-        /* ✅ 커서 완전 숨김 */
-    html, body, .wrap, .wrap *{
-      cursor: none !important;
-    }
-    
-    /* (선택) 포커스 외곽선 때문에 “툭” 하는 느낌도 같이 제거 */
-    button:focus, .tab:focus, input:focus{
+
+    /* 버튼/탭 포커스 외곽선 제거 */
+    button:focus,
+    .tab:focus{
       outline: none !important;
     }
+    
+    /* 체크박스 포커스 깜빡임 방지 */
+    input[type="checkbox"]:focus{
+      outline: none !important;
+    }
+    
     .card{
       flex:1 1 0;
       min-width:0;           /* 테이블이 옆으로 안 밀게 */
