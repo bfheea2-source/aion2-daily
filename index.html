@@ -824,7 +824,82 @@
       flex: 0 0 calc(360px * var(--uiScale)) !important;
       min-width: calc(360px * var(--uiScale)) !important;
     }
+
+        /* ===== 회랑/뿌리/날개/유황 아래 공용 카드 ===== */
+    .task-remain-card{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--grid);
+      background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 100%);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
     
+    .task-remain-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    
+    .task-remain-title{
+      font-size: 12px;
+      color: var(--muted);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+    }
+    
+    .task-remain-title .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background:#4f6fff;
+      box-shadow: 0 0 0 4px rgba(79,111,255,0.14);
+    }
+    
+    .task-remain-value{
+      font-weight: 800;
+      font-size: 13px;
+      color:#0f172a;
+      letter-spacing:-0.2px;
+      text-align:right;
+    }
+    
+    .task-remain-sub{
+      margin-top: 6px;
+      font-size: 11px;
+      color:#64748b;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+    
+    .task-remain-bar{
+      margin-top: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.08);
+      overflow:hidden;
+    }
+    
+    .task-remain-bar > div{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg, #4f6fff 0%, #22c55e 100%);
+      transition: width 200ms ease;
+    }
+    
+    .task-remain-card.is-urgent .task-remain-title .dot{
+      background:#ff5a5f;
+      box-shadow: 0 0 0 4px rgba(255,90,95,0.16);
+    }
+    .task-remain-card.is-urgent .task-remain-value{
+      color:#b91c1c;
+    }
+
     .sidePanel h3{
       margin:0;
       font-size:14px;
@@ -1487,6 +1562,26 @@
           window.getSelection().removeAllRanges();
         } catch(e){}
       }, true);
+
+      function formatRemainDHMS(ms){
+        if (!isFinite(ms) || ms <= 0){
+          return "0일 0시간 0분 0초";
+        }
+      
+        var sec = Math.floor(ms / 1000);
+      
+        var day = Math.floor(sec / 86400);
+        sec = sec % 86400;
+      
+        var hour = Math.floor(sec / 3600);
+        sec = sec % 3600;
+      
+        var min = Math.floor(sec / 60);
+        sec = sec % 60;
+      
+        return day + "일 " + hour + "시간 " + min + "분 " + sec + "초";
+      }
+
 
       function showToast(title, body, ms){
         if (typeof ms !== "number" || ms <= 0) ms = 3500;
@@ -3684,34 +3779,94 @@
               })(day);
 
               td.appendChild(hbox);
-              td.appendChild(hbox);
               /* ✅ 회랑 초기화 남은시간 표시(뿌리/날개/유황 아래) */
               ensureHoerangCalib(state.activeChar);
               var calib = state.hoerangCalib[state.activeChar];
               
-              var info = document.createElement("div");
-              info.className = "conqInfo";
-              info.style.marginTop = "8px";
+              /* ✅ 카드 1개만 유지: 기존 있으면 재사용 */
+              var card = td.querySelector("#hoerangRemainCard");
+              if (!card){
+                card = document.createElement("div");
+                card.id = "hoerangRemainCard";
+                card.className = "task-remain-card";
+                card.style.marginTop = "10px";
               
-              /* id를 캐릭 단위로 하나만 쓰면 today 화면에서 충분 */
-              info.id = "hoerangRemainInfo";
+                card.innerHTML =
+                  '<div class="task-remain-row">' +
+                    '<div class="task-remain-title">' +
+                      '<span class="dot"></span>' +
+                      '<span>회랑 초기화까지</span>' +
+                    '</div>' +
+                    '<div id="hoerangRemainValue" class="task-remain-value">미설정</div>' +
+                  '</div>' +
+                  '<div class="task-remain-sub">' +
+                    '<span id="hoerangNextAt">다음: -</span>' +
+                    '<span id="hoerangStatus">상태: -</span>' +
+                  '</div>' +
+                  '<div class="task-remain-bar">' +
+                    '<div id="hoerangRemainBar"></div>' +
+                  '</div>';
+              
+                td.appendChild(card);
+              }
+              
+              /* ✅ 요소 핸들 */
+              var valueEl = card.querySelector("#hoerangRemainValue");
+              var nextAtEl = card.querySelector("#hoerangNextAt");
+              var statusEl = card.querySelector("#hoerangStatus");
+              var barEl = card.querySelector("#hoerangRemainBar");
               
               if (calib && calib.nextResetAtIso){
                 var nextMs = Date.parse(calib.nextResetAtIso);
+              
                 if (nextMs){
                   var remain = nextMs - Date.now();
-                  info.textContent = "회랑 초기화까지: " + formatRemainHMS(remain) + " 남음";
+                  if (remain < 0){
+                    remain = 0;
+                  }
+              
+                  valueEl.textContent = formatRemainDHMS(remain);
+              
+                  var d = new Date(nextMs);
+                  nextAtEl.textContent =
+                    "다음: " +
+                    d.getFullYear() + "-" +
+                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(d.getDate()).padStart(2, "0") + " " +
+                    String(d.getHours()).padStart(2, "0") + ":" +
+                    String(d.getMinutes()).padStart(2, "0");
+              
+                  /* ✅ 임박(10분 이하) 강조 */
+                  if (remain <= 10 * 60 * 1000){
+                    card.classList.add("is-urgent");
+                    statusEl.textContent = "상태: 임박";
+                  } else {
+                    card.classList.remove("is-urgent");
+                    statusEl.textContent = "상태: 대기";
+                  }
+              
+                  /* ✅ 진행바(24시간 기준) */
+                  var dayMs = 24 * 60 * 60 * 1000;
+                  var pct = Math.max(0, Math.min(100, Math.round((remain / dayMs) * 100)));
+                  barEl.style.width = pct + "%";
                 } else {
-                  info.textContent = "회랑 초기화 시간: -";
+                  valueEl.textContent = "-";
+                  nextAtEl.textContent = "다음: -";
+                  statusEl.textContent = "상태: -";
+                  barEl.style.width = "0%";
+                  card.classList.remove("is-urgent");
                 }
               } else {
-                info.textContent = "회랑 초기화 시간: 미설정";
+                valueEl.textContent = "미설정";
+                nextAtEl.textContent = "다음: -";
+                statusEl.textContent = "상태: 미설정";
+                barEl.style.width = "0%";
+                card.classList.remove("is-urgent");
               }
-              
-              td.appendChild(info);
               
               tr.appendChild(td);
               continue;
+
             }
 
             if (taskName === CHO_WOL){
