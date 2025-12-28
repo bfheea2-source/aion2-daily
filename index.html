@@ -2220,6 +2220,24 @@
         }
       }
 
+      function parseHHMMSS(input){
+        if (input == null) return null;
+      
+        var s = String(input).trim();
+        if (!s) return null;
+      
+        // 정확히 HH:MM:SS 형식만 허용
+        var m = s.match(/^(\d{1,2}):([0-5]\d):([0-5]\d)$/);
+        if (!m) return null;
+      
+        var hh = parseInt(m[1], 10);
+        var mm = parseInt(m[2], 10);
+        var ss = parseInt(m[3], 10);
+      
+        if (isNaN(hh) || isNaN(mm) || isNaN(ss)) return null;
+      
+        return (hh * 3600) + (mm * 60) + ss; // 초 단위
+      }
 
       function parseKoreanDurationToMinutes(s){
         if (s == null) return null;
@@ -2251,19 +2269,19 @@
       
         var calib = state.hoerangCalib[char];
       
-        // 이미 있으면 OK
+        // 이미 설정돼 있으면 OK
         if (calib.nextResetAtIso){
           return true;
         }
       
-        // ✅ 다른 캐릭터에 값 있으면 복사 여부 먼저 묻기
+        // ✅ 다른 캐릭터 값 있으면 복사 제안
         var donorChar = findAnyOtherHoerangResetChar(char);
         if (donorChar){
           var same = confirm(
             "[" + donorChar + "] 캐릭터에 회랑 초기화 시간이 이미 있습니다.\n" +
             "같은 계정(같은 초기화 시간)인가요?\n\n" +
-            "확인(예) = 이 값으로 그대로 사용\n" +
-            "취소(아니오) = 직접 입력"
+            "확인 = 그대로 사용\n" +
+            "취소 = 직접 입력 (HH:MM:SS)"
           );
       
           if (same){
@@ -2274,27 +2292,30 @@
           }
         }
       
-        // ✅ 직접 입력
+        // ✅ 반드시 HH:MM:SS 형식으로 입력
         var input = prompt(
-          "회랑 체크 초기화까지 남은 시간을 입력하세요.\n" +
-          "예) 1시간 10분\n" +
-          "예) 70 (분)\n\n" +
-          "※ 이 시간이 지난 뒤 회랑 체크가 초기화됩니다."
+          "회랑 체크 초기화까지 남은 시간을 입력하세요.\n\n" +
+          "형식: HH:MM:SS\n" +
+          "예) 01:10:00  (1시간 10분)\n" +
+          "예) 00:45:30\n\n" +
+          "※ 다른 형식은 허용되지 않습니다."
         );
+      
         if (input === null) return false;
       
-        var min = parseKoreanDurationToMinutes(input);
-        if (!min){
-          alert("입력 형식이 올바르지 않습니다.\n예) 1시간 10분 / 70");
+        var sec = parseHHMMSS(input);
+        if (sec === null || sec <= 0){
+          alert("입력 형식이 올바르지 않습니다.\n반드시 HH:MM:SS 형식으로 입력하세요.\n예) 01:10:00");
           return false;
         }
       
-        var next = Date.now() + min * 60 * 1000;
+        var next = Date.now() + (sec * 1000);
         calib.nextResetAtIso = new Date(next).toISOString();
       
-        save("회랑 초기화 시간 설정(입력)");
+        save("회랑 초기화 시간 설정(HH:MM:SS)");
         return true;
       }
+
 
       
       function resetHoerangChecksIfTimePassed(char){
