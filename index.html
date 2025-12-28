@@ -1453,7 +1453,8 @@
         viewMode: "today",
         counts: {},
         charMeta: {},
-        today: "월"
+        today: "월",
+        hoerangCalib: {}
       };
 
       var SHUGO_KEY = "shugoFesta.v1";
@@ -2035,6 +2036,7 @@
           state.transcendSpendLog = {};
           state.counts = {};
           state.charMeta = {};
+          state.hoerangCalib = {}; 
 
           var i;
           for (i = 0; i < state.characters.length; i += 1){
@@ -2076,6 +2078,8 @@
           state.counts = migrated.counts && typeof migrated.counts === "object" ? migrated.counts : {};
           state.transcendUsed = migrated.transcendUsed && typeof migrated.transcendUsed === "object" ? migrated.transcendUsed : {};
           state.transcendSpendLog = migrated.transcendSpendLog && typeof migrated.transcendSpendLog === "object" ? migrated.transcendSpendLog : {};
+          state.hoerangCalib = (migrated.hoerangCalib && typeof migrated.hoerangCalib === "object") ? migrated.hoerangCalib : {};
+
 
           var i;
           for (i = 0; i < state.characters.length; i += 1){
@@ -2137,6 +2141,8 @@
           state.transcendSpendLog = {};
           state.counts = {};
           state.charMeta = {};
+          state.hoerangCalib = (migrated.hoerangCalib && typeof migrated.hoerangCalib === "object") ? migrated.hoerangCalib : {};
+
 
           var i;
           for (i = 0; i < state.characters.length; i += 1){
@@ -2175,6 +2181,7 @@
 
           counts: state.counts,
           charMeta: state.charMeta,
+          hoerangCalib: state.hoerangCalib,   // ✅ 추가
           meta: { savedAt: nowIso(), reason: reason || "auto" }
         };
 
@@ -2412,9 +2419,11 @@
         if (!state.charMeta[charName]) {
           state.charMeta[charName] = { itemLevel: 0 };
         }
+        
         if (typeof state.charMeta[charName].itemLevel !== "number") {
           state.charMeta[charName].itemLevel = 0;
         }
+        ensureHoerangCalib(charName);   // ✅ 추가 (회랑 초기화 시간 구조 보장)
       }
 
       function addCharacter(){
@@ -3675,6 +3684,32 @@
               })(day);
 
               td.appendChild(hbox);
+              td.appendChild(hbox);
+              /* ✅ 회랑 초기화 남은시간 표시(뿌리/날개/유황 아래) */
+              ensureHoerangCalib(state.activeChar);
+              var calib = state.hoerangCalib[state.activeChar];
+              
+              var info = document.createElement("div");
+              info.className = "conqInfo";
+              info.style.marginTop = "8px";
+              
+              /* id를 캐릭 단위로 하나만 쓰면 today 화면에서 충분 */
+              info.id = "hoerangRemainInfo";
+              
+              if (calib && calib.nextResetAtIso){
+                var nextMs = Date.parse(calib.nextResetAtIso);
+                if (nextMs){
+                  var remain = nextMs - Date.now();
+                  info.textContent = "회랑 초기화까지: " + formatRemainHMS(remain) + " 남음";
+                } else {
+                  info.textContent = "회랑 초기화 시간: -";
+                }
+              } else {
+                info.textContent = "회랑 초기화 시간: 미설정";
+              }
+              
+              td.appendChild(info);
+              
               tr.appendChild(td);
               continue;
             }
@@ -3790,6 +3825,36 @@
           btn.blur();
         } catch(e){}
       }, true);
+
+      function updateHoerangRemainUI(){
+        var el = document.getElementById("hoerangRemainInfo");
+        if (!el) return;
+      
+        var char = state.activeChar;
+        ensureHoerangCalib(char);
+      
+        var calib = state.hoerangCalib[char];
+        if (!calib || !calib.nextResetAtIso){
+          el.textContent = "회랑 초기화 시간: 미설정";
+          return;
+        }
+      
+        var nextMs = Date.parse(calib.nextResetAtIso);
+        if (!nextMs){
+          el.textContent = "회랑 초기화 시간: -";
+          return;
+        }
+      
+        var remain = nextMs - Date.now();
+      
+        if (remain <= 0){
+          el.textContent = "회랑 초기화됨 (다시 체크하면 시간 입력)";
+          return;
+        }
+      
+        el.textContent = "회랑 초기화까지: " + formatRemainHMS(remain) + " 남음";
+      }
+
 
       function wireButtons(){
         function on(id, evt, fn){
@@ -4276,7 +4341,8 @@
         renderTabs();
         renderHeader();
         renderGrid();
-        renderSidePanel();      
+        renderSidePanel();
+        updateHoerangRemainUI();
       }
 
       var fbUser = null;
@@ -4488,7 +4554,9 @@
         wireButtons();
         loadShugoPrefs();
         updateShugoAlarmBtn();
-
+        setInterval(function(){
+          updateHoerangRemainUI();
+        }, 1000);
         updateShugoPanel();
         setInterval(updateShugoPanel, 1000);
 
