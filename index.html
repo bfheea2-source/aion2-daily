@@ -2251,10 +2251,30 @@
       
         var calib = state.hoerangCalib[char];
       
+        // 이미 있으면 OK
         if (calib.nextResetAtIso){
           return true;
         }
       
+        // ✅ 다른 캐릭터에 값 있으면 복사 여부 먼저 묻기
+        var donorChar = findAnyOtherHoerangResetChar(char);
+        if (donorChar){
+          var same = confirm(
+            "[" + donorChar + "] 캐릭터에 회랑 초기화 시간이 이미 있습니다.\n" +
+            "같은 계정(같은 초기화 시간)인가요?\n\n" +
+            "확인(예) = 이 값으로 그대로 사용\n" +
+            "취소(아니오) = 직접 입력"
+          );
+      
+          if (same){
+            ensureHoerangCalib(donorChar);
+            calib.nextResetAtIso = state.hoerangCalib[donorChar].nextResetAtIso;
+            save("회랑 초기화 시간 설정(복사)");
+            return true;
+          }
+        }
+      
+        // ✅ 직접 입력
         var input = prompt(
           "회랑 체크 초기화까지 남은 시간을 입력하세요.\n" +
           "예) 1시간 10분\n" +
@@ -2272,10 +2292,11 @@
         var next = Date.now() + min * 60 * 1000;
         calib.nextResetAtIso = new Date(next).toISOString();
       
-        save("회랑 초기화 시간 설정");
+        save("회랑 초기화 시간 설정(입력)");
         return true;
       }
 
+      
       function resetHoerangChecksIfTimePassed(char){
         ensureCharStructures(char);
         ensureHoerangCalib(char);
@@ -2284,7 +2305,7 @@
         if (!calib.nextResetAtIso) return false;
       
         var nextMs = Date.parse(calib.nextResetAtIso);
-        if (!nextMs) {
+        if (!nextMs){
           calib.nextResetAtIso = "";
           return false;
         }
@@ -2293,13 +2314,8 @@
           return false;
         }
       
-        // 🔹 회랑 체크 초기화 (실제 데이터 구조에 맞게!)
-        var obj =
-          state.weekly &&
-          state.weekly.data &&
-          state.weekly.data[char] &&
-          state.weekly.data[char][HOERANG];
-      
+        // ✅ 회랑 체크 초기화 (정확한 경로: state.data[char][HOERANG][요일][파트])
+        var obj = state.data && state.data[char] && state.data[char][HOERANG];
         if (obj){
           for (var d = 0; d < DAYS.length; d += 1){
             var dayKey = DAYS[d];
@@ -2311,12 +2327,13 @@
           }
         }
       
-        // ✅ 핵심: 초기화 후엔 다음 시간을 다시 묻게 하기
+        // ✅ 다음 시간은 다시 묻게
         calib.nextResetAtIso = "";
       
-        save("회랑 체크 초기화");
+        save("회랑 체크 초기화(시간 경과)");
         return true;
       }
+
 
 
       function setActiveChar(name){
@@ -3610,10 +3627,21 @@
                     cb.checked = getValue(state.activeChar, HOERANG, dayName, partName);
 
                     cb.addEventListener("change", function(){
+                      // ✅ 회랑 체크를 누르는 순간, 초기화 시간이 없으면 입력(또는 다른 캐릭 값 복사)
+                      if (cb.checked){
+                        var okTime = ensureHoerangNextResetTime(state.activeChar);
+                        if (!okTime){
+                          // 시간 입력 취소면 체크도 취소 처리
+                          cb.checked = false;
+                          return;
+                        }
+                      }
+                    
                       setValue(state.activeChar, HOERANG, dayName, cb.checked, partName);
                       save("체크 변경 (회랑-" + partName + ")");
                       render();
                     });
+
 
                     var text = document.createElement("span");
                     text.textContent = partName;
@@ -3997,6 +4025,22 @@
         return total;
       }
       
+      function findAnyOtherHoerangResetChar(exceptChar){
+        if (!state || !state.hoerangCalib) return "";
+      
+        for (var c in state.hoerangCalib){
+          if (!Object.prototype.hasOwnProperty.call(state.hoerangCalib, c)) continue;
+          if (c === exceptChar) continue;
+      
+          var calib = state.hoerangCalib[c];
+          if (calib && typeof calib.nextResetAtIso === "string" && calib.nextResetAtIso){
+            return c;
+          }
+        }
+        return "";
+      }
+
+      
       function findAnyOtherCalibratedChar(exceptChar){
         // exceptChar 제외하고 lastBaseCharge가 있는 첫 캐릭터 찾기
         for (var c in state.oddEnergy){
@@ -4207,6 +4251,7 @@
 
       function render(){
         runAutoCharges();
+        resetHoerangChecksIfTimePassed(state.activeChar);
         renderTabs();
         renderHeader();
         renderGrid();
