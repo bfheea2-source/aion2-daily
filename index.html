@@ -157,22 +157,22 @@
 
     .dayHead{
       display:flex;
-      flex-direction:column;
-      gap:4px;
+      flex-direction:row;           /* ✅ 가로 */
       align-items:center;
-      justify-content:center;
+      justify-content:space-between; /* 요일 ←→ 버튼 */
+      gap:8px;
     }
+    
     .dayBtns{
       display:flex;
-      flex-direction:column;
-      gap:4px;
-      align-items:center;
+      flex-direction:row;           /* ✅ 버튼도 가로 */
+      gap:6px;
     }
+    
     .dayBtns button{
-      padding:4px 6px;
+      padding:4px 8px;
       font-size:11px;
-      border-radius:9px;
-      width:84px;
+      border-radius:999px;
       white-space:nowrap;
     }
 
@@ -1027,12 +1027,8 @@
       
           <button id="loginBtn" type="button" class="cloud headerAuthBtn">Google 로그인</button>
           <button id="logoutBtn" type="button" class="cloud headerAuthBtn" style="display:none;">로그아웃</button>
-        </div>
-      
-        <div class="hint" id="syncHint">
-          체크하면 즉시 저장됩니다 (localStorage).<br/>
-          로그인하면 Google 계정으로 동기화됩니다.
-        </div>
+        </div>     
+
       </div>
     </header>
 
