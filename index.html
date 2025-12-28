@@ -3303,8 +3303,18 @@
 
               var infoN = document.createElement("div");
               infoN.className = "conqInfo";
+              
+              var usedN = cN.used || 0;
+              var baseN = cN.base || 0;
+              var bonusN = cN.bonus || 0;
+              
+              // 기본부터 먼저 소모, 그 다음 추가 소모로 “잔여” 계산
+              var remainBaseN = Math.max(0, baseN - usedN);
+              var remainBonusN = Math.max(0, bonusN - Math.max(0, usedN - baseN));
+              
               infoN.innerHTML =
-              "이용 가능 : <b>" + availableN + "회</b> 기본 " + cN.base + " / 추가 " + cN.bonus;
+                "이용 가능 : <b>" + availableN + "회</b> " +
+                "잔여 기본 " + remainBaseN + " / 잔여 추가 " + remainBonusN;
 
 
 
@@ -3359,8 +3369,17 @@
 
               var infoD = document.createElement("div");
               infoD.className = "conqInfo";
+              var usedD = cD.used || 0;
+              var baseD = cD.base || 0;
+              var bonusD = cD.bonus || 0;
+              
+              var remainBaseD = Math.max(0, baseD - usedD);
+              var remainBonusD = Math.max(0, bonusD - Math.max(0, usedD - baseD));
+              
               infoD.innerHTML =
-                "이용 가능 : <b>" + availableD + "회</b> 기본 " + cD.base + " / 추가 " + cD.bonus;
+                "이용 가능 : <b>" + availableD + "회</b> " +
+                "잔여 기본 " + remainBaseD + " / 잔여 추가 " + remainBonusD;
+
 
 
 
@@ -3415,8 +3434,16 @@
 
               var infoW = document.createElement("div");
               infoW.className = "conqInfo";
+              var usedW = cW.used || 0;
+              var baseW = cW.base || 0;
+              var bonusW = cW.bonus || 0;
+              
+              var remainBaseW = Math.max(0, baseW - usedW);
+              var remainBonusW = Math.max(0, bonusW - Math.max(0, usedW - baseW));
+              
               infoW.innerHTML =
-                "이용 가능 : <b>" + availableW + "회</b> 기본 " + cW.base + " / 추가 " + cW.bonus;
+                "이용 가능 : <b>" + availableW + "회</b> " +
+                "잔여 기본 " + remainBaseW + " / 잔여 추가 " + remainBonusW;
 
 
 
