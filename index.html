@@ -216,12 +216,13 @@
 
     .hoerangBox{
       display:flex;
-      flex-direction:column;
-      gap:4px;
+      flex-direction:row;      /* ✅ 가로 1열 */
+      gap:8px;
       align-items:center;
       justify-content:center;
-      padding-left:0;
     }
+
+    
     .mini{
       display:inline-flex;
       align-items:center;
@@ -3082,26 +3083,32 @@
           "회랑":"🌀"
         };
         
-        var titleWrap = document.createElement("div");
-        titleWrap.className = "taskTitle";
-        
-        var icon = document.createElement("div");
-        icon.className = "taskIcon";
-        icon.textContent = iconMap[taskName] || "✅";
-        
-        var label = document.createElement("span");
-        label.textContent = taskName;
-        
-        titleWrap.appendChild(icon);
-        titleWrap.appendChild(label);
-        nameTd.appendChild(titleWrap);
-        
-        if (isWeeklyTask(taskName)){
-          var badge = document.createElement("span");
-          badge.className = "badgeWeekly";
-          badge.textContent = "주 1회";
-          nameTd.appendChild(badge);
-        }
+          var titleRow = document.createElement("div");
+          titleRow.className = "taskTitleRow";
+
+          var titleWrap = document.createElement("div");
+          titleWrap.className = "taskTitle";
+          
+          var icon = document.createElement("div");
+          icon.className = "taskIcon";
+          icon.textContent = iconMap[taskName] || "✅";
+          
+          var label = document.createElement("span");
+          label.textContent = taskName;
+          
+          titleWrap.appendChild(icon);
+          titleWrap.appendChild(label);
+          titleRow.appendChild(titleWrap);
+          
+          if (isWeeklyTask(taskName)){
+            var badge = document.createElement("span");
+            badge.className = "badgeWeekly";
+            badge.textContent = "주 1회";
+            titleRow.appendChild(badge);   // ✅ 오른쪽
+          }
+          
+          nameTd.appendChild(titleRow);
+
 
           tr.appendChild(nameTd);
 
