@@ -255,10 +255,12 @@
       font-size:12px;
       border-radius:8px;
     }
+    
     .conqInfo{
       font-size:11px;
       color:#444;
       line-height:1.2;
+      white-space:nowrap;
     }
 
     footer{
@@ -3212,8 +3214,9 @@
               var infoN = document.createElement("div");
               infoN.className = "conqInfo";
               infoN.innerHTML =
-                "이용 가능: " + availableN + "회<br/>" +
-                "기본 " + cN.base + " / 추가 " + cN.bonus;
+              "이용 가능 : <b>" + availableN + "회</b> 기본 " + cN.base + " / 추가 " + cN.bonus;
+
+
 
               boxN.appendChild(ctrN);
               boxN.appendChild(infoN);
@@ -3267,8 +3270,9 @@
               var infoD = document.createElement("div");
               infoD.className = "conqInfo";
               infoD.innerHTML =
-                "이용 가능: " + availableD + "회<br/>" +
-                "기본 " + cD.base + " / 추가 " + cD.bonus;
+                "이용 가능 : <b>" + availableD + "회</b> 기본 " + cD.base + " / 추가 " + cD.bonus;
+
+
 
               boxD.appendChild(ctrD);
               boxD.appendChild(infoD);
@@ -3322,8 +3326,9 @@
               var infoW = document.createElement("div");
               infoW.className = "conqInfo";
               infoW.innerHTML =
-                "이용 가능: " + availableW + "회<br/>" +
-                "기본 " + cW.base + " / 추가 " + cW.bonus;
+                "이용 가능 : <b>" + availableW + "회</b> 기본 " + cW.base + " / 추가 " + cW.bonus;
+
+
 
               boxW.appendChild(ctrW);
               boxW.appendChild(infoW);
