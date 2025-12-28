@@ -18,6 +18,7 @@
       --tabActive:#fff;
       --muted:#666;
       --shadow:0 2px 10px rgba(0,0,0,0.06);
+      --uiScale: 1;
     }
 
     *{box-sizing:border-box;}
@@ -456,10 +457,7 @@
     
     /* 헤더를 더 컴팩트하게 */
     #gridTable thead th{
-      background:linear-gradient(180deg,#f7f8fb,#eef1f6) !important;
-      border:0 !important;
-      border-bottom:1px solid #d9dde3 !important;
-      padding:10px 10px !important;
+      padding: calc(10px * var(--uiScale)) calc(10px * var(--uiScale)) !important;
     }
     
     /* 셀 경계선 “검정 격자” 느낌 줄이기 */
@@ -581,7 +579,7 @@
     
     /* 전체 글자 살짝 키우기 */
     #gridTable td, #gridTable thead th{
-      font-size:13px !important;
+      font-size: calc(13px * var(--uiScale)) !important;
     }
     
     /* 좌측 숙제명 더 굵게/선명하게 */
@@ -600,15 +598,14 @@
     #gridTable thead th{
       border-bottom:1px solid #cfd6e3 !important;
     }
+    
     #gridTable td{
-      border-bottom:1px solid #e0e6f0 !important;
+      padding: calc(10px * var(--uiScale)) calc(10px * var(--uiScale)) !important;
     }
     
     /* 헤더(요일) 더 크게 */
     .dayHead > div:first-child{
-      font-size:15px;
-      font-weight:900;
-      letter-spacing:-0.2px;
+      font-size: calc(15px * var(--uiScale)) !important;
     }
     
     /* ===== 체크 상태가 '색으로' 바로 보이게 ===== */
@@ -616,9 +613,7 @@
     
     /* 기본(미완료) 칩 */
     .cellChip{
-      border-color:#cfd6e3 !important;
-      background:#f4f6fa !important;
-      color:#222 !important;
+      width: calc(84px * var(--uiScale)) !important;
     }
     
     /* 완료(체크됨) → 초록 강조 */
@@ -756,11 +751,8 @@
     
     /* 오른쪽 */
     .sidePanel{
-      flex:0 0 360px;
-      min-width:360px;
-      height:100%;
-      min-height:0;
-      overflow:visible;   /* ✅ 내부 스크롤 제거 */
+      flex: 0 0 calc(360px * var(--uiScale)) !important;
+      min-width: calc(360px * var(--uiScale)) !important;
     }
 
     
@@ -3881,13 +3873,13 @@
           var s = Math.min(1, scaleX, scaleY);
       
           // ✅ 너무 작아지는 것 방지 (가독성 하한)
-          var MIN_SCALE = 0.78;
-          if (s < MIN_SCALE) s = MIN_SCALE;
+          var MIN_SCALE = 0.78;          
       
           wrap.style.transform = "scale(" + s + ")";
           // scale 하면 오른쪽이 잘릴 수 있어서 width 보정
           wrap.style.width = (100 / s) + "%";
           wrap.style.height = (100 / s) + "%";
+          document.documentElement.style.setProperty("--uiScale", s.toFixed(3));
         });
       }
 
