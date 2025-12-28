@@ -32,6 +32,8 @@
     
     .wrap{
       height:calc(100vh - 36px); /* body padding 18*2 */
+      display:flex;
+      flex-direction:column;
     }
     
     header{
@@ -41,6 +43,7 @@
       gap:12px;
       margin-bottom:12px;
     }
+    
     h1{margin:0;font-size:20px;letter-spacing:-0.2px;}
     .hint{
       font-size:12px;
@@ -55,8 +58,9 @@
     }
     
     .card{
+      flex:1 1 0;
+      min-width:0;           /* 테이블이 옆으로 안 밀게 */
       height:100%;
-      min-height:0;
       display:flex;
       flex-direction:column;
     }
@@ -284,8 +288,12 @@
       font-size:12px;
       line-height:1.4;
     }
-
+    
     .mainLayout{
+      display:flex;
+      flex-direction:row;
+      flex-wrap:nowrap;      /* 아래로 떨어지지 않게 */
+      gap:12px;
       height:100%;
       align-items:stretch;
     }
@@ -752,11 +760,11 @@
     
     /* 오른쪽 */
     .sidePanel{
+      flex:0 0 360px;        /* 폭은 원하는대로(340~420 추천) */
+      min-width:360px;
       height:100%;
       min-height:0;
       overflow:auto;
-      position:relative; /* sticky 해제 느낌 */
-      top:auto;
     }
     
     .sidePanel h3{
