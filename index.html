@@ -29,8 +29,12 @@
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
       background:var(--soft);
       color:#111;
+      caret-color: transparent;
     }    
 
+    input, textarea, [contenteditable="true"]{
+      caret-color: auto;
+    }
     
     header{
       display:flex;
@@ -1444,6 +1448,23 @@
         document.body.appendChild(host);
         return host;
       }
+
+      document.addEventListener("mousedown", function(ev){
+        var t = ev.target;
+        if (!t) return;
+      
+        var btn = t.closest ? t.closest("button") : null;
+        if (!btn) return;
+      
+        ev.preventDefault();
+        ev.stopPropagation();
+      
+        try{
+          if (document.activeElement) document.activeElement.blur();
+          btn.blur();
+          window.getSelection().removeAllRanges();
+        } catch(e){}
+      }, true);
 
       function showToast(title, body, ms){
         if (typeof ms !== "number" || ms <= 0) ms = 3500;
