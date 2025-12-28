@@ -2210,6 +2210,114 @@
         try{ el.textContent = new Date(iso).toLocaleString(); }
         catch(e){ el.textContent = iso; }
       }
+      
+      function ensureHoerangCalib(char){
+        if (!state.hoerangCalib) state.hoerangCalib = {};
+        if (!state.hoerangCalib[char]) {
+          state.hoerangCalib[char] = {
+            nextResetAtIso: ""
+          };
+        }
+      }
+
+
+      function parseKoreanDurationToMinutes(s){
+        if (s == null) return null;
+        s = String(s).trim();
+        if (!s) return null;
+      
+        if (/^\d+$/.test(s)){
+          var n = parseInt(s, 10);
+          return (isNaN(n) || n <= 0) ? null : n;
+        }
+      
+        var x = s.replace(/\s+/g, "");
+        var h = 0, m = 0;
+      
+        var mh = x.match(/(\d+)시간/);
+        if (mh) h = parseInt(mh[1], 10);
+      
+        var mm = x.match(/(\d+)분/);
+        if (mm) m = parseInt(mm[1], 10);
+      
+        if (h <= 0 && m <= 0) return null;
+        return h * 60 + m;
+      }
+
+      
+      function ensureHoerangNextResetTime(char){
+        ensureCharStructures(char);
+        ensureHoerangCalib(char);
+      
+        var calib = state.hoerangCalib[char];
+      
+        if (calib.nextResetAtIso){
+          return true;
+        }
+      
+        var input = prompt(
+          "회랑 체크 초기화까지 남은 시간을 입력하세요.\n" +
+          "예) 1시간 10분\n" +
+          "예) 70 (분)\n\n" +
+          "※ 이 시간이 지난 뒤 회랑 체크가 초기화됩니다."
+        );
+        if (input === null) return false;
+      
+        var min = parseKoreanDurationToMinutes(input);
+        if (!min){
+          alert("입력 형식이 올바르지 않습니다.\n예) 1시간 10분 / 70");
+          return false;
+        }
+      
+        var next = Date.now() + min * 60 * 1000;
+        calib.nextResetAtIso = new Date(next).toISOString();
+      
+        save("회랑 초기화 시간 설정");
+        return true;
+      }
+
+      function resetHoerangChecksIfTimePassed(char){
+        ensureCharStructures(char);
+        ensureHoerangCalib(char);
+      
+        var calib = state.hoerangCalib[char];
+        if (!calib.nextResetAtIso) return false;
+      
+        var nextMs = Date.parse(calib.nextResetAtIso);
+        if (!nextMs) {
+          calib.nextResetAtIso = "";
+          return false;
+        }
+      
+        if (Date.now() < nextMs){
+          return false;
+        }
+      
+        // 🔹 회랑 체크 초기화 (실제 데이터 구조에 맞게!)
+        var obj =
+          state.weekly &&
+          state.weekly.data &&
+          state.weekly.data[char] &&
+          state.weekly.data[char][HOERANG];
+      
+        if (obj){
+          for (var d = 0; d < DAYS.length; d += 1){
+            var dayKey = DAYS[d];
+            if (obj[dayKey]){
+              obj[dayKey]["뿌리"] = false;
+              obj[dayKey]["날개"] = false;
+              obj[dayKey]["유황"] = false;
+            }
+          }
+        }
+      
+        // ✅ 핵심: 초기화 후엔 다음 시간을 다시 묻게 하기
+        calib.nextResetAtIso = "";
+      
+        save("회랑 체크 초기화");
+        return true;
+      }
+
 
       function setActiveChar(name){
         state.activeChar = name;
