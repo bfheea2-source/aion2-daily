@@ -767,6 +767,54 @@
       justify-content:space-between; /* ← 좌/우 분리 */
       gap:10px;
     }
+
+
+    body input,
+    body textarea,
+    body [contenteditable],
+    body [contenteditable="true"],
+    body input[type="number"],
+    body input[type="text"],
+    body input[type="tel"],
+    body input[type="search"],
+    body input[type="password"]{
+      caret-color: transparent !important;
+    }
+    
+    /* 포커스 상태에서도 강제 */
+    body input:focus,
+    body textarea:focus,
+    body [contenteditable]:focus{
+      caret-color: transparent !important;
+    }
+
+    /* ✅ 숙제 이름 + 주1회 뱃지 간격 줄이기 */
+    .taskNameWrap,  /* 네가 혹시 이런 래퍼를 쓰면 먹음 */
+    .taskTitleWrap,
+    .taskLabelWrap{
+      display: flex;
+      align-items: center;
+      justify-content: flex-start !important;
+      gap: 8px !important;   /* ← 이 값만 취향대로 6~10 조절 */
+    }
+    
+    /* ✅ 주1회 뱃지가 멀리 도망가는 원인 차단 */
+    .weekTag,
+    .badgeWeekly,
+    .weeklyBadge,
+    .tagWeekly{
+      margin-left: 8px !important;
+    }
+    
+    /* 혹시 margin-left:auto 로 밀고 있으면 이걸로 박살 */
+    .weekTag,
+    .badgeWeekly,
+    .weeklyBadge,
+    .tagWeekly{
+      margin-left: 8px !important;
+      margin-right: 0 !important;
+    }
+
     
     /* 오른쪽 */
     .sidePanel{
