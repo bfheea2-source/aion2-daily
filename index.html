@@ -3848,62 +3848,109 @@
         })();
       }
 
+
+      function parseDurationTextToMinutes(s){
+        if (s === null || s === undefined) return NaN;
+        s = String(s).trim();
+        if (!s) return NaN;
+      
+        // 숫자만 입력(예: 110)도 허용
+        if (/^\d+$/.test(s)){
+          return parseInt(s, 10);
+        }
+      
+        // "1시간10분", "1시간 10분", "1h 10m" 비슷한 것도 어느정도 처리
+        s = s.replace(/\s+/g, "");
+      
+        var h = 0;
+        var m = 0;
+      
+        var mh = s.match(/(\d+)시간/);
+        if (mh) h = parseInt(mh[1], 10);
+      
+        var mm = s.match(/(\d+)분/);
+        if (mm) m = parseInt(mm[1], 10);
+      
+        // "70분"처럼 시간 없이 분만도 OK
+        if (!mh && !mm){
+          return NaN;
+        }
+      
+        var total = (h * 60) + m;
+        return total;
+      }
+      
+      function findAnyOtherCalibratedChar(exceptChar){
+        // exceptChar 제외하고 lastBaseCharge가 있는 첫 캐릭터 찾기
+        for (var c in state.oddEnergy){
+          if (c === exceptChar) continue;
+          var odd = state.oddEnergy[c];
+          if (odd && odd.lastBaseCharge){
+            return c;
+          }
+        }
+        return "";
+      }
+
       function calibrateBaseOddIfNeeded(char){
         ensureCharStructures(char);
       
         var odd = state.oddEnergy[char];
       
-        // 이미 기준이 있으면 끝
         if (odd.lastBaseCharge){
           return;
         }
       
-        // 다른 캐릭터에 보정된 값 있으면 같은 계정인지 물어보기
-        var otherChar = findOtherOddBaseCalibChar(char);
-        if (otherChar){
-          var ok = confirm(
-            "다른 캐릭터에 기본 오드 보정값이 있어요.\n\n" +
-            "같은 계정이라 그 값을 그대로 적용할까요?\n" +
-            "(예: 그대로 적용 / 아니오: 직접 입력)"
-          );
-      
-          if (ok){
-            odd.lastBaseCharge = state.oddEnergy[otherChar].lastBaseCharge;
-            save("기본 오드 기준 보정(복사)");
-            return;
-          }
-          // 아니오면 아래에서 직접 입력받기
-        }
-      
-        // 최초 1회만 안내/입력 (네 기존 정책 유지)
         if (state.__oddCalibPromptedOnce){
           return;
         }
         state.__oddCalibPromptedOnce = true;
       
-        var remainStr = prompt(
+        // ✅ 다른 캐릭터에 보정값 있으면 먼저 물어보기
+        var donorChar = findAnyOtherCalibratedChar(char);
+        if (donorChar){
+          var same = confirm(
+            "[" + donorChar + "] 캐릭터에 이미 보정값이 있습니다.\n" +
+            "같은 계정(같은 캐릭터군) 보정값인가요?\n\n" +
+            "확인(예) = 이 값으로 그대로 보정\n" +
+            "취소(아니오) = 직접 입력"
+          );
+      
+          if (same){
+            // ✅ 복사(이상하게 가져오는 버그 방지: donorChar 명확히 고정)
+            ensureCharStructures(donorChar);
+            odd.lastBaseCharge = state.oddEnergy[donorChar].lastBaseCharge;
+            save("기본 오드 기준 보정(복사)");
+            return;
+          }
+          // 아니오면 아래에서 직접 입력 진행
+        }
+      
+        // ✅ 직접 입력 (1시간10분 형태)
+        var input = prompt(
           "기본 오드에너지 다음 충전까지 남은 시간을 입력하세요.\n" +
-          "예) 1시간10분 / 2시간 / 45분 / 1:10 / 110(분)\n\n" +
+          "(예: 1시간10분, 0시간40분, 70분)\n\n" +
           "※ 최초 1회만 필요합니다."
         );
       
-        if (remainStr === null){
+        if (input === null){
           return;
         }
       
-        var remainMin = parseDurationKR(remainStr);
-        if (remainMin == null || isNaN(remainMin) || remainMin <= 0){
-          alert("입력 형식이 올바르지 않아요.\n예) 1시간10분 / 2시간 / 45분 / 1:10 / 110");
+        var remainMin = parseDurationTextToMinutes(input);
+        if (isNaN(remainMin) || remainMin <= 0){
+          alert("올바른 형식으로 입력하세요.\n예: 1시간10분 / 70분");
           return;
         }
       
         var now = Date.now();
-        var interval = 3 * 60 * 60 * 1000; // 3시간 주기 고정(기존 유지)
+        var interval = 3 * 60 * 60 * 1000;
         var last = now + (remainMin * 60 * 1000) - interval;
       
         odd.lastBaseCharge = new Date(last).toISOString();
-        save("기본 오드 기준 보정");
+        save("기본 오드 기준 보정(입력)");
       }
+
 
       function bindEditTotalLive(){
         function val(id){
