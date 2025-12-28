@@ -818,7 +818,17 @@
       margin-right: 0 !important;
     }
 
+        /* 회랑 초기화 남은시간 - 각성전 스타일 */
+    .hoerang-remain{
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
     
+    .hoerang-remain b{
+      color: #0f172a;
+      font-weight: 700;
+    }
     /* 오른쪽 */
     .sidePanel{
       flex: 0 0 calc(360px * var(--uiScale)) !important;
@@ -3778,94 +3788,35 @@
                 }
               })(day);
 
-              td.appendChild(hbox);
-              /* ✅ 회랑 초기화 남은시간 표시(뿌리/날개/유황 아래) */
+              td.appendChild(hbox);              
+               /* ✅ 회랑 초기화 남은시간 표시(뿌리/날개/유황 아래) */
               ensureHoerangCalib(state.activeChar);
               var calib = state.hoerangCalib[state.activeChar];
               
-              /* ✅ 카드 1개만 유지: 기존 있으면 재사용 */
-              var card = td.querySelector("#hoerangRemainCard");
-              if (!card){
-                card = document.createElement("div");
-                card.id = "hoerangRemainCard";
-                card.className = "task-remain-card";
-                card.style.marginTop = "10px";
-              
-                card.innerHTML =
-                  '<div class="task-remain-row">' +
-                    '<div class="task-remain-title">' +
-                      '<span class="dot"></span>' +
-                      '<span>회랑 초기화까지</span>' +
-                    '</div>' +
-                    '<div id="hoerangRemainValue" class="task-remain-value">미설정</div>' +
-                  '</div>' +
-                  '<div class="task-remain-sub">' +
-                    '<span id="hoerangNextAt">다음: -</span>' +
-                    '<span id="hoerangStatus">상태: -</span>' +
-                  '</div>' +
-                  '<div class="task-remain-bar">' +
-                    '<div id="hoerangRemainBar"></div>' +
-                  '</div>';
-              
-                td.appendChild(card);
-              }
-              
-              /* ✅ 요소 핸들 */
-              var valueEl = card.querySelector("#hoerangRemainValue");
-              var nextAtEl = card.querySelector("#hoerangNextAt");
-              var statusEl = card.querySelector("#hoerangStatus");
-              var barEl = card.querySelector("#hoerangRemainBar");
+              var info = document.createElement("div");
+              info.className = "hoerang-remain";
+              info.id = "hoerangRemainInfo";
               
               if (calib && calib.nextResetAtIso){
                 var nextMs = Date.parse(calib.nextResetAtIso);
-              
                 if (nextMs){
                   var remain = nextMs - Date.now();
                   if (remain < 0){
                     remain = 0;
                   }
-              
-                  valueEl.textContent = formatRemainDHMS(remain);
-              
-                  var d = new Date(nextMs);
-                  nextAtEl.textContent =
-                    "다음: " +
-                    d.getFullYear() + "-" +
-                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
-                    String(d.getDate()).padStart(2, "0") + " " +
-                    String(d.getHours()).padStart(2, "0") + ":" +
-                    String(d.getMinutes()).padStart(2, "0");
-              
-                  /* ✅ 임박(10분 이하) 강조 */
-                  if (remain <= 10 * 60 * 1000){
-                    card.classList.add("is-urgent");
-                    statusEl.textContent = "상태: 임박";
-                  } else {
-                    card.classList.remove("is-urgent");
-                    statusEl.textContent = "상태: 대기";
-                  }
-              
-                  /* ✅ 진행바(24시간 기준) */
-                  var dayMs = 24 * 60 * 60 * 1000;
-                  var pct = Math.max(0, Math.min(100, Math.round((remain / dayMs) * 100)));
-                  barEl.style.width = pct + "%";
+                  info.innerHTML =
+                    '회랑 초기화까지 : <b>' + formatRemainDHMS(remain) + '</b>';
                 } else {
-                  valueEl.textContent = "-";
-                  nextAtEl.textContent = "다음: -";
-                  statusEl.textContent = "상태: -";
-                  barEl.style.width = "0%";
-                  card.classList.remove("is-urgent");
+                  info.innerHTML = '회랑 초기화까지 : <b>-</b>';
                 }
               } else {
-                valueEl.textContent = "미설정";
-                nextAtEl.textContent = "다음: -";
-                statusEl.textContent = "상태: 미설정";
-                barEl.style.width = "0%";
-                card.classList.remove("is-urgent");
+                info.innerHTML = '회랑 초기화까지 : <b>미설정</b>';
               }
               
+              td.appendChild(info);
               tr.appendChild(td);
               continue;
+
 
             }
 
