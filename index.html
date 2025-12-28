@@ -130,6 +130,8 @@
       border-radius:10px;
       cursor:pointer;
       font-size:12px;
+      user-select:none !important;
+      -webkit-user-select:none !important;
     }
     button:hover{border-color:#bbb;}
     button:disabled{
@@ -3535,6 +3537,24 @@
 
         table.appendChild(tbody);
       }
+
+      // ✅ 버튼 클릭 시 포커스 자체를 막아서 "커서가 잠깐 생김" 현상 제거
+      document.addEventListener("pointerdown", function(ev){
+        var t = ev.target;
+        if (!t) return;
+      
+        var btn = t.closest ? t.closest("button") : null;
+        if (!btn) return;
+      
+        // 포커스 이동 자체를 막음 (이게 핵심)
+        ev.preventDefault();
+      
+        // 혹시 기존 포커스가 남아있으면 같이 제거
+        try{
+          if (document.activeElement) document.activeElement.blur();
+          btn.blur();
+        } catch(e){}
+      }, true);
 
       function wireButtons(){
         function on(id, evt, fn){
