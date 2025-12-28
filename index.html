@@ -1674,7 +1674,7 @@
           saveShugoPrefs();
           updateShugoAlarmBtn();
 
-          try{ new Notification("슈고페스타 알람 테스트", { body: "3분 전 알림 예시입니다." }); } catch(e){}
+          try{ new Notification("슈고페스타 알람 테스트", { body: "1분 전 알림 예시입니다." }); } catch(e){}
           return;
         }
 
@@ -1684,7 +1684,7 @@
             saveShugoPrefs();
             updateShugoAlarmBtn();
 
-            try{ new Notification("슈고페스타 알람 허용 완료", { body: "3분 전 알림으로 알려드릴게요!" }); } catch(e){}
+            try{ new Notification("슈고페스타 알람 허용 완료", { body: "1분 전 알림으로 알려드릴게요!" }); } catch(e){}
             return;
           }
 
@@ -1715,30 +1715,39 @@
         var remainEl = document.getElementById("sideShugoRemain");
         var nextEl = document.getElementById("sideShugoNext");
         if (!remainEl || !nextEl) return;
-
+      
         var now = new Date();
         var next = getNextShugoTime(now);
         var remain = next.getTime() - now.getTime();
-
+      
         remainEl.textContent = formatRemainHMS(remain) + " 남음";
         nextEl.textContent = formatDateHM(next) + " (15/45분)";
-
-        if (remain <= 180000 && remain > 178800){
+      
+        // ✅ 1분 전 알림 (60초 ± 0.6초)
+        if (remain <= 60000 && remain > 59400){
           var preKey = next.toISOString();
-
+      
           if (shugoState.lastPreFiredIso !== preKey){
             shugoState.lastPreFiredIso = preKey;
             saveShugoState();
-
-            var okPre = notifyShugo("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")");
-
+      
+            var okPre = notifyShugo(
+              "슈고페스타 1분 전!",
+              "1분 뒤 시작 (" + formatDateHM(next) + ")"
+            );
+      
             playRewardSound();
             if (!okPre && (!("Notification" in window) || Notification.permission !== "granted")){
-              showToast("슈고페스타 3분 전!", "3분 뒤 시작 (" + formatDateHM(next) + ")", 3500);
+              showToast(
+                "슈고페스타 1분 전!",
+                "1분 뒤 시작 (" + formatDateHM(next) + ")",
+                3500
+              );
             }
           }
         }
       }
+
 
       function formatRemainHMS(ms){
         if (ms < 0) ms = 0;
