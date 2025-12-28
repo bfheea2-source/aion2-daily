@@ -157,18 +157,21 @@
 
     .dayHead{
       display:flex;
-      flex-direction:row;           /* ✅ 가로 */
+      flex-direction:row;
       align-items:center;
-      justify-content:space-between; /* 요일 ←→ 버튼 */
-      gap:8px;
+      justify-content:flex-start; /* ✅ 여기! space-between 금지 */
+      gap:6px;                    /* 요일-버튼 사이 기본 간격 */
     }
+
     
     .dayBtns{
       display:flex;
-      flex-direction:row;           /* ✅ 버튼도 가로 */
+      flex-direction:row;
+      align-items:center;
       gap:6px;
+      margin-left:6px; /* ✅ 요일 바로 오른쪽에 붙게 */
     }
-    
+
     .dayBtns button{
       padding:4px 8px;
       font-size:11px;
