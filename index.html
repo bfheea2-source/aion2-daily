@@ -1552,8 +1552,7 @@
         return false;
       }
 
-      function requestShugoPermission(){
-        playShugoFestaSound();
+      function requestShugoPermission(){        
 
         if (!("Notification" in window)){
           shugoPrefs.enabled = true;
@@ -1593,15 +1592,16 @@
       function updateShugoAlarmBtn(){
         var btn = document.getElementById("shugoAlarmBtn");
         if (!btn) return;
-
+      
         if (shugoPrefs.enabled){
-          btn.textContent = "알람 ON / 미리듣기";
+          btn.textContent = "알람 ON (클릭=OFF)";
           btn.classList.add("btnPrimary");
         } else {
-          btn.textContent = "알람 허용 / 미리듣기";
+          btn.textContent = "알람 OFF (클릭=ON)";
           btn.classList.remove("btnPrimary");
         }
       }
+
 
       function updateShugoPanel(){
         if (!shugoPrefs.enabled) return;
@@ -3525,7 +3525,21 @@
           render();
         });
 
-        on("shugoAlarmBtn", "click", function(){ requestShugoPermission(); });
+        on("shugoAlarmBtn", "click", function(){
+          // ON이면 -> OFF (소리 없음)
+          if (shugoPrefs.enabled){
+            shugoPrefs.enabled = false;
+            saveShugoPrefs();
+            updateShugoAlarmBtn();
+            showToast("슈고페스타 알람 OFF", "알람이 꺼졌습니다.", 2000);
+            return;
+          }
+        
+          // OFF면 -> ON 시도 (여기서만 미리듣기 1회)
+          playShugoFestaSound();
+          requestShugoPermission();
+        });
+
 
         on("sideOddAddBtn", "click", function(){
           var char = state.activeChar;
