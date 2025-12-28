@@ -818,7 +818,6 @@
       flex: 0 0 calc(360px * var(--uiScale)) !important;
       min-width: calc(360px * var(--uiScale)) !important;
     }
-
     
     .sidePanel h3{
       margin:0;
@@ -3705,6 +3704,20 @@
           overlay.addEventListener("pointercancel", function(){
             downOnOverlay = false;
           });
+
+          document.addEventListener("click", function(ev){
+          var t = ev.target;
+          if (!t) return;
+        
+          // 버튼이거나 버튼 안쪽(span/div) 눌러도 처리
+          var btn = t.closest ? t.closest("button") : null;
+          if (!btn) return;
+        
+          // 클릭 후 포커스 제거
+          setTimeout(function(){
+            try{ btn.blur(); } catch(e){}
+          }, 0);
+        }, true);
         })();
       }
 
@@ -3885,7 +3898,14 @@
         var badge = document.getElementById("syncBadge");
         var label = document.getElementById("syncText");
         if (!badge || !label) return;
-      
+
+          // ✅ 같은 값이면 아무것도 안 함(불필요한 깜빡임/리플로우 방지)
+        if (label.textContent === (text || "")){
+          // mode도 동일하면 return
+          if (badge.classList.contains(mode || "local")){
+            return;
+          }
+        }
         badge.classList.remove("local","cloud","syncing","error");
       
         if (mode === "cloud"){
@@ -3927,9 +3947,8 @@
           return;
         }
       
-        if (__syncUi.busy){
-          setSyncBadge("syncing", "동기화 중…");
-        } else if (__syncUi.lastErr){
+        // ✅ 저장 중(syncing) 표시는 아예 안 함: 배지 깜빡임 방지
+        if (__syncUi.lastErr){
           setSyncBadge("error", "동기화 오류");
         } else {
           setSyncBadge("cloud", "클라우드 동기화");
