@@ -45,14 +45,10 @@
     }
 
     .card{
-      background:var(--bg);
-      border:1px solid #ddd;
-      border-radius:14px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      flex: 1 1 auto;
-      min-width: 0;
+      flex:1 1 0;
+      min-width:0;
     }
+
 
     .tabs{
       display:flex;
@@ -276,7 +272,9 @@
       display:flex;
       gap:16px;
       align-items:flex-start;
+      flex-wrap:nowrap;
     }
+
 
     .btn2x{
       display:inline-flex;
@@ -731,7 +729,10 @@
     }
 
     .sidePanel{
-      width:260px;
+      flex:0 0 280px;
+      width:280px;
+      min-width:280px;
+    
       background:#fff;
       border:1px solid #ddd;
       border-radius:14px;
@@ -745,6 +746,7 @@
       max-height:calc(100vh - 24px);
       overflow:auto;
     }
+
 
     
     .sidePanel h3{
