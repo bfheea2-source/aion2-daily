@@ -2974,7 +2974,7 @@
 
         var now = new Date();
         var six = new Date();
-        six.setHours(6,0,0,0);
+        six.setHours(5,0,0,0);
         if (now < six) six.setDate(six.getDate() - 1);
 
         var key = six.toISOString();
@@ -2991,7 +2991,7 @@
         var now = new Date();
         var w = new Date(now);
         w.setDate(w.getDate() - w.getDay() + 3);
-        w.setHours(6,0,0,0);
+        w.setHours(5,0,0,0);
         if (now < w) w.setDate(w.getDate() - 7);
 
         var key = w.toISOString();
