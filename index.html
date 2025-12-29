@@ -2327,10 +2327,22 @@
         if (!state.hoerangCalib) state.hoerangCalib = {};
         if (!state.hoerangCalib[char]) {
           state.hoerangCalib[char] = {
-            nextResetAtIso: ""
+            nextResetAtIso: "",
+            hold: { "뿌리": false, "날개": false, "유황": false }   // ✅ 추가
           };
+          return;
+        }
+      
+        // ✅ 이미 있던 데이터에도 hold 보정
+        if (!state.hoerangCalib[char].hold || typeof state.hoerangCalib[char].hold !== "object"){
+          state.hoerangCalib[char].hold = { "뿌리": false, "날개": false, "유황": false };
+        } else {
+          if (typeof state.hoerangCalib[char].hold["뿌리"] !== "boolean") state.hoerangCalib[char].hold["뿌리"] = false;
+          if (typeof state.hoerangCalib[char].hold["날개"] !== "boolean") state.hoerangCalib[char].hold["날개"] = false;
+          if (typeof state.hoerangCalib[char].hold["유황"] !== "boolean") state.hoerangCalib[char].hold["유황"] = false;
         }
       }
+
 
       function parseHHMMSS(input){
         if (input == null) return null;
@@ -2399,6 +2411,11 @@
           if (same){
             ensureHoerangCalib(donorChar);
             calib.nextResetAtIso = state.hoerangCalib[donorChar].nextResetAtIso;
+            calib.hold = {
+              "뿌리": !!state.hoerangCalib[donorChar].hold["뿌리"],
+              "날개": !!state.hoerangCalib[donorChar].hold["날개"],
+              "유황": !!state.hoerangCalib[donorChar].hold["유황"]
+            };
             save("회랑 초기화 시간 설정(복사)");
             return true;
           }
@@ -2456,6 +2473,9 @@
               obj[dayKey]["뿌리"] = false;
               obj[dayKey]["날개"] = false;
               obj[dayKey]["유황"] = false;
+              calib.hold["뿌리"] = false;
+              calib.hold["날개"] = false;
+              calib.hold["유황"] = false;
             }
           }
         }
@@ -2645,30 +2665,57 @@
 
       function getValue(charName, taskName, dayName, partName){
         if (!state.data[charName]) return false;
-
+      
         if (taskName === HOERANG){
+          ensureHoerangCalib(charName);
+      
+          var calib = state.hoerangCalib[charName];
+          if (calib && calib.nextResetAtIso){
+            var nextMs = Date.parse(calib.nextResetAtIso);
+            if (nextMs && Date.now() < nextMs){
+              // ✅ 잠금시간 남아있으면 요일 무시하고 hold로 보여줌
+              return calib.hold && calib.hold[partName] === true;
+            }
+          }
+      
+          // ✅ 잠금이 없으면 기존 요일칸 사용
           var cell = state.data[charName][HOERANG] && state.data[charName][HOERANG][dayName];
           if (!cell || typeof cell !== "object") return false;
           return cell[partName] === true;
         }
-
+      
         var t = state.data[charName][taskName];
         if (!t || typeof t !== "object") return false;
         return t[dayName] === true;
       }
 
+
       function setValue(charName, taskName, dayName, value, partName){
         ensureCharStructures(charName);
-
+      
         if (taskName === HOERANG){
+          ensureHoerangCalib(charName);
+      
           var cell = state.data[charName][HOERANG][dayName];
           if (!cell || typeof cell !== "object"){
             state.data[charName][HOERANG][dayName] = { "뿌리": false, "날개": false, "유황": false };
           }
+      
+          // ✅ 기존 요일칸도 저장(백업/호환용)
           state.data[charName][HOERANG][dayName][partName] = value ? true : false;
+      
+          // ✅ 잠금시간이 남아있으면 hold에도 저장(이게 핵심)
+          var calib = state.hoerangCalib[charName];
+          if (calib && calib.nextResetAtIso){
+            var nextMs = Date.parse(calib.nextResetAtIso);
+            if (nextMs && Date.now() < nextMs){
+              calib.hold[partName] = value ? true : false;
+            }
+          }
+      
           return;
         }
-
+      
         if (isWeeklyTask(taskName)){
           var di;
           for (di = 0; di < DAYS.length; di += 1){
@@ -2676,9 +2723,10 @@
           }
           return;
         }
-
+      
         state.data[charName][taskName][dayName] = value ? true : false;
       }
+
 
       function setAllForDay(charName, dayName, value){
         var t, part;
